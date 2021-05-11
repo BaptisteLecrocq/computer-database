@@ -5,6 +5,7 @@ public class test {
 	public static void main(String[] args) {
 		
 		CRUD test = new CRUD();
+		System.out.println(test.getComputerList());
 
 	}
 

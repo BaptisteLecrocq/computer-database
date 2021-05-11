@@ -11,7 +11,8 @@ public class test {
 		
 		Connect test = new Connect();
 		System.out.println(test.listComputer());
-		//test.addComputer(new Computer("testa",null,null,new Company(23)));
+		test.addComputer(new Computer("testadd",null,null,3));
+		System.out.println(test.listComputer());
 		//System.out.println(test.findComputer("test1234"));
 		//test.updateComputer(test.findComputer("testa").getId(),new Computer("testb",null,null,new Company(26)));
 		//System.out.println("ici");

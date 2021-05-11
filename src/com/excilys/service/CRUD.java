@@ -1,13 +1,8 @@
 package com.excilys.service;
 
+import com.excilys.dao.*;
 import com.excilys.model.*;
 
-import java.sql.Array;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -15,64 +10,124 @@ public class CRUD {
 	
 	private ArrayList<Computer> computerList;
 	private ArrayList<Company> companyList;
+	private Connect connection;
+	
+	//Singleton pattern
+	private static CRUD firstCrud = new CRUD();
+	private static CRUD getFirst() {
+		return(firstCrud);
+	}
 	
 	public CRUD() {
-		computerList = new ArrayList<Computer>();
-		companyList = new ArrayList<Company>();
+		
+		connection = new Connect();
+		computerList = connection.listComputer();
+		companyList = connection.listCompany();		
 		
 		}
 	
-	public ArrayList<Computer> list(){
-		return(computerList);
+	public ArrayList<Computer> listComputer(){
+		return(firstCrud.getComputerList());
 	}
 	
-	public void add(int id, String name, Date start, Date end, int company_id) {
+	public ArrayList<Company> listCompany(){
+		return(firstCrud.getCompanyList());
+	}
+	
+	public boolean add(Computer computer) {
 		
-		Computer computer = new Computer(id,name,start,end,company_id);
-		computerList.add(computer);
+		try {
+			firstCrud.connection.addComputer(computer);
+			firstCrud.computerList.add(computer);
+			return true;
+		}catch(Exception e){
+			e.printStackTrace();
+			return false;
+		}
 		
 	}
 	
-	public void update(String name, Date start, Date end, Company manufacturer) throws NullPointerException {
+	public boolean update(Computer replace) {
 		
-		Computer computer = this.getComputerByName(name);
+		Computer computer = firstCrud.getComputerById(replace.getId());
 		
 		if(computer==null) {
-			throw new NullPointerException();
+			return false;
 		}
-		else {		
-			computer.setStart(start);
-			computer.setEnd(end);
-			computer.setManufacturer(manufacturer);
+		else {
+			
+			computer.setName(replace.getName());
+			computer.setStart(replace.getStart());
+			computer.setEnd(replace.getEnd());
+			computer.setManufacturer(replace.getManufacturer());
+			
+			firstCrud.connection.updateComputer(replace.getId(), computer);
+			firstCrud.computerList.set(replace.getId()-1, computer);
+			
+			return(true);
 		}		
 	}
 	
-	public void delete(String name) throws NullPointerException{
+	public boolean delete(int id){
 		
-		Computer computer = this.getComputerByName(name);
+		Computer computer = firstCrud.getComputerById(id);
 		
 		if(computer == null) {
-			throw new NullPointerException();
+			return false;
 		}
 		else {
-			computerList.remove(computer);
+			
+			firstCrud.connection.deleteComputer(id);
+			firstCrud.computerList.remove(computer);
+			
+			return true;
 		}
 	}
 	
 	
-	public Computer getComputerByName(String name) {
+	public Computer getComputerByName(String name) {		
 		
-		
-		for(Computer c : computerList) {
+		for(Computer c : firstCrud.computerList) {
 			if(c.getName().equals(name)) {
 				return(c);
 			}
 		}		
 		
-		// Not found Exception ?
+		// Not found Exception ?		
+		return(null);		
+	}
+	
+	public Computer getComputerById(int id) {		
 		
-		return(null);
+		for(Computer c : firstCrud.computerList) {
+			if(c.getId() == id){
+				return(c);
+			}
+		}		
 		
+		// Not found Exception ?		
+		return(null);		
+	}
+
+	public ArrayList<Computer> getComputerList() {
+		return computerList;
+	}
+
+	public void setComputerList(ArrayList<Computer> computerList) {
+		this.computerList = computerList;
+	}
+
+	public ArrayList<Company> getCompanyList() {
+		return companyList;
+	}
+
+	/*
+	public void setCompanyList(ArrayList<Company> companyList) {
+		this.companyList = companyList;
+	}
+	*/
+	public void CRUDstop() {
+		firstCrud.connection.stop();
 	}
 	
 }

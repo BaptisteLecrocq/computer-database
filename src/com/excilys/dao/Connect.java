@@ -22,8 +22,7 @@ public class Connect {
 	private static Connect getBdd() {
 		return(Bdd);		
 	}
-	*/
-			
+	*/			
 	
 	public Connect(){
 		// Chargement du Driver et enregistrement auprès du DriverMgr
@@ -173,7 +172,7 @@ public ArrayList<Company> listCompany() {
 		
 	}
 	
-	public void updateComputer(int id, Computer computer) throws NullPointerException {
+	public void updateComputer(int id, Computer computer) {
 		String query = "UPDATE computer SET name = ? ,introduced = ?, discontinued = ?, company_id = ? WHERE id=?";
 		//String query = "INSERT INTO company('name','introduced','discontinued','company_id') VALUES('"+computer.getName()+"','"+computer.getStart()+"','"+computer.getEnd()+"','"+computer.getManufacturer().getId()+"')";
 		int results;
@@ -189,7 +188,8 @@ public ArrayList<Company> listCompany() {
 			results = ps.executeUpdate();
 			
 		} catch(Exception e){
-			throw new NullPointerException();
+			System.out.println("DAO : Computer not Found");
+			e.printStackTrace();
 		}
 	}
 	

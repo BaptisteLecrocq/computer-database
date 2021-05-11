@@ -1,9 +1,11 @@
 package com.excilys.model;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 public class Computer {
 	
+	//Auto increment
 	private int id;
 	//Can't be null
 	private String name;
@@ -11,6 +13,13 @@ public class Computer {
 	private Date start;
 	private Date end;
 	private Company manufacturer;
+	
+	//Singleton pattern
+	private static ArrayList<Computer> computerList;
+	private static Company first = new Computer();
+	private static Company getFirst() {
+		return(first);
+	}
 	
 	public Computer(int id, String name) throws IllegalArgumentException{
 		
@@ -25,6 +34,7 @@ public class Computer {
 	}
 	
 	public Computer(int id, String name, Date start, Date end, int company_id) throws IllegalArgumentException{
+		
 		if(name==null) {
 			throw new IllegalArgumentException();
 		}
