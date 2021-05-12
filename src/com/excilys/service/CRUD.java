@@ -4,7 +4,6 @@ import com.excilys.dao.*;
 import com.excilys.model.*;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 public class CRUD {
 	
@@ -13,10 +12,11 @@ public class CRUD {
 	private Connect connection;
 	
 	//Singleton pattern
+	
 	private static CRUD firstCrud = new CRUD();
-	private static CRUD getFirst() {
+	public static CRUD getFirst() {
 		return(firstCrud);
-	}
+	}	
 	
 	public CRUD() {
 		
@@ -27,18 +27,18 @@ public class CRUD {
 		}
 	
 	public ArrayList<Computer> listComputer(){
-		return(firstCrud.getComputerList());
+		return(getComputerList());
 	}
 	
 	public ArrayList<Company> listCompany(){
-		return(firstCrud.getCompanyList());
+		return(getCompanyList());
 	}
 	
 	public boolean add(Computer computer) {
 		
 		try {
-			firstCrud.connection.addComputer(computer);
-			firstCrud.computerList.add(computer);
+			connection.addComputer(computer);			
+			computerList.add(computer);
 			return true;
 		}catch(Exception e){
 			e.printStackTrace();
@@ -49,20 +49,15 @@ public class CRUD {
 	
 	public boolean update(Computer replace) {
 		
-		Computer computer = firstCrud.getComputerById(replace.getId());
+		int index = getComputerIndexById(replace.getId());
 		
-		if(computer==null) {
+		if(index==0) {
 			return false;
 		}
 		else {
 			
-			computer.setName(replace.getName());
-			computer.setStart(replace.getStart());
-			computer.setEnd(replace.getEnd());
-			computer.setManufacturer(replace.getManufacturer());
-			
-			firstCrud.connection.updateComputer(replace.getId(), computer);
-			firstCrud.computerList.set(replace.getId()-1, computer);
+			connection.updateComputer(replace.getId(), replace);
+			computerList.set(index, replace);
 			
 			return(true);
 		}		
@@ -70,24 +65,23 @@ public class CRUD {
 	
 	public boolean delete(int id){
 		
-		Computer computer = firstCrud.getComputerById(id);
+		int index = getComputerIndexById(id);
 		
-		if(computer == null) {
+		if(index == 0) {
 			return false;
 		}
 		else {
 			
-			firstCrud.connection.deleteComputer(id);
-			firstCrud.computerList.remove(computer);
+			connection.deleteComputer(id);
+			computerList.remove(index);
 			
 			return true;
 		}
-	}
-	
+	}	
 	
 	public Computer getComputerByName(String name) {		
 		
-		for(Computer c : firstCrud.computerList) {
+		for(Computer c : computerList) {
 			if(c.getName().equals(name)) {
 				return(c);
 			}
@@ -97,9 +91,22 @@ public class CRUD {
 		return(null);		
 	}
 	
+	public int getComputerIndexById(int id) {		
+		
+		for(int i=0;i<computerList.size();i++) {
+			Computer c = computerList.get(i);
+			if(c.getId() == id){
+				return(i);
+			}
+		}		
+		
+		// Not found Exception ?		
+		return(0);		
+	}
+	
 	public Computer getComputerById(int id) {		
 		
-		for(Computer c : firstCrud.computerList) {
+		for(Computer c:computerList) {
 			if(c.getId() == id){
 				return(c);
 			}
@@ -109,6 +116,14 @@ public class CRUD {
 		return(null);		
 	}
 
+	public ArrayList<Computer> pageComputerList(int start, int taille){
+		return(connection.getPageComputer(start,taille));
+	}
+	public ArrayList<Company> pageCompanyList(int start, int taille){
+		return(connection.getPageCompany(start,taille));
+	}
+	
+	
 	public ArrayList<Computer> getComputerList() {
 		return computerList;
 	}
@@ -127,7 +142,7 @@ public class CRUD {
 	}
 	*/
 	public void CRUDstop() {
-		firstCrud.connection.stop();
+		connection.stop();
 	}
 	
 }

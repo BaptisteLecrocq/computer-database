@@ -13,14 +13,15 @@ public class Company {
 	
 	private int id;
 	private String name;
-	
-	
-	//Singleton pattern
+
 	private static ArrayList<Company> companyList;
+	
+	//Singleton pattern	
 	private static Company first = new Company();
 	private static Company getFirst() {
 		return(first);
 	}
+	
 	
 	public Company() {
 		
@@ -69,7 +70,7 @@ public class Company {
 	
 	public Company getCompanyById(int id) {
 
-		ArrayList<Company> buffer = this.getFirst().getCompanyList();
+		ArrayList<Company> buffer = Company.getCompanyList();
 		
 		for(Company c : buffer) {
 			if(c.getId()==id) {
