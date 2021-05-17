@@ -16,27 +16,10 @@ import java.time.LocalDate;
 public class Connect {
 	
 	private Connection db;
-
-	//Singleton pattern
-	/*
-	private static Connect Bdd = new Connect();
-	private static Connect getBdd() {
-		return(Bdd);		
-	}
-	*/
-				
 	
-	public Connect(){
-		// Chargement du Driver et enregistrement auprès du DriverMgr
-		/*
-		try {
-			Class.forName("com.mysql.cj.jdbc.Driver");
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-		*/		
+	public Connect(){	
 		
-		// URL de la source de donnéeString 
+		// URL de la source de donnée String 
 		String url = "jdbc:mysql://127.0.0.1:3306/computer-database-db" ;
 
 		try {
@@ -98,7 +81,6 @@ public class Connect {
 	public void addComputer(Computer computer) {
 		
 		String query = "INSERT INTO computer (name, introduced, discontinued, company_id) VALUES(?,?,?,?)";
-		//String query = "INSERT INTO company('name','introduced','discontinued','company_id') VALUES('"+computer.getName()+"','"+computer.getStart()+"','"+computer.getEnd()+"','"+computer.getManufacturer().getId()+"')";
 		int results;
 		
 		try {
@@ -231,7 +213,11 @@ public class Connect {
 			
 			while(results.next()) {
 				
-				Computer buffer = new Computer(results.getInt("computer.id"),results.getString("computer.name"),results.getObject("computer.introduced",LocalDate.class),results.getObject("computer.discontinued",LocalDate.class),results.getInt("computer.company_id"));
+				Computer buffer = new Computer(results.getInt("computer.id"),
+					results.getString("computer.name"),
+					results.getObject("computer.introduced",LocalDate.class),
+					results.getObject("computer.discontinued",LocalDate.class),
+					results.getInt("computer.company_id"));
 				
 				list.add(buffer);
 			}			

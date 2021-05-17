@@ -22,11 +22,9 @@ public class Computer {
 	
 	private static ArrayList<Integer> computerIdList;
 	
-	//Singleton pattern
-	private static Computer first = new Computer();
-	private static Computer getFirst() {
-		return(first);
-	}
+	//Initialize computerIdList
+	private static Computer initialize = new Computer();
+
 	
 	public Computer() {
 			
@@ -74,6 +72,7 @@ public class Computer {
 			this.id = id;
 		}
 		if(name==null) {
+			System.out.println("Name can't be null");
 			throw new IllegalArgumentException();
 		}
 		else {
@@ -82,6 +81,7 @@ public class Computer {
 		
 		if(start!=null && end!=null) {
 			if(end.isBefore(start)) {
+				System.out.println("Discontuation date must be higher than Introduction date");
 				throw new IllegalArgumentException();
 			}
 		}

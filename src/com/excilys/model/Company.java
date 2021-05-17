@@ -16,12 +16,8 @@ public class Company {
 
 	private static ArrayList<Company> companyList;
 	
-	//Singleton pattern	
-	private static Company first = new Company();
-	private static Company getFirst() {
-		return(first);
-	}
-	
+	//Initialize companyList	
+	private static Company initialize = new Company();	
 	
 	public Company() {
 		

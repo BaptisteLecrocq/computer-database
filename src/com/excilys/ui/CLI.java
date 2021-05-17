@@ -1,6 +1,5 @@
 package com.excilys.ui;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.text.ParseException;
@@ -34,7 +33,6 @@ public class CLI {
 		PageComputerFactory computerFactory = new PageComputerFactory();
 		PageCompanyFactory companyFactory = new PageCompanyFactory();
 		Page p = null;
-		int pageStatus = 0;
 		
 		while(status >= 0) {
 			switch(status){
@@ -169,12 +167,15 @@ public class CLI {
 		while(i<order.length) {
 			System.out.println(order[i]+"\n");
 			switch(i) {
+			//Waits for computer id
 			case 1:
 				id = sc.nextInt();
 				break;
+			//Waits for computer name
 			case 2:
 				name = sc.next();
 				break;
+			//Waits and check for introduction date
 			case 3:
 				String date1 = sc.next();
 				if(date1.equals("n")) {
@@ -188,7 +189,8 @@ public class CLI {
 						i--;
 					} 
 				}
-				break;				
+				break;	
+			//Waits and check for discontinuation date
 			case 4:
 				String date2 = sc.next();
 				if(date2.equals("n")) {
@@ -203,6 +205,7 @@ public class CLI {
 					} 
 				}
 				break;
+			//Waits for company id
 			case 5:
 				company_id = sc.nextInt();
 				break;
@@ -221,24 +224,35 @@ public class CLI {
 		
 		while(pageStatus>=0) {
 			switch(pageStatus) {
+			//Goes to Next page
 			case 1:
 				page = page.nextPage();
 				
 				pageStatus = 0;
 				break;
+			//Goes to Previous page
 			case 2:
-				page = page.previousPage();
+				if(page.getStart()-page.getTaille()>=0) {
+					page = page.previousPage();
+				}
+				else {
+					System.out.println("No previous page"+"\n");
+				}
 				
 				pageStatus = 0;
 				break;
+			//Exits loop
 			case 3:
 				pageStatus =-1;
 				break;
+			//Prints page and waits for next action
 			default:
+				
 				System.out.println(page.toString());
 				System.out.println("\n"+"Enter a number :"+"\n"+"1) Next Page | 2) Previous Page | 3) Exit"+"\n");
 				
 				pageStatus = sc.nextInt();
+				clean();
 				break;
 			}
 		}

@@ -11,8 +11,7 @@ public class CRUD {
 	private ArrayList<Company> companyList;
 	private Connect connection;
 	
-	//Singleton pattern
-	
+	//Singleton pattern	
 	private static CRUD firstCrud = new CRUD();
 	public static CRUD getFirst() {
 		return(firstCrud);
@@ -86,8 +85,7 @@ public class CRUD {
 				return(c);
 			}
 		}		
-		
-		// Not found Exception ?		
+			
 		return(null);		
 	}
 	
@@ -99,8 +97,7 @@ public class CRUD {
 				return(i);
 			}
 		}		
-		
-		// Not found Exception ?		
+				
 		return(0);		
 	}
 	
@@ -112,7 +109,6 @@ public class CRUD {
 			}
 		}		
 		
-		// Not found Exception ?		
 		return(null);		
 	}
 
@@ -136,11 +132,6 @@ public class CRUD {
 		return companyList;
 	}
 
-	/*
-	public void setCompanyList(ArrayList<Company> companyList) {
-		this.companyList = companyList;
-	}
-	*/
 	public void CRUDstop() {
 		connection.stop();
 	}
