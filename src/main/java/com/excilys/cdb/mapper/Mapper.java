@@ -1,13 +1,13 @@
-package main.java.com.excilys.cdb.mapper;
+package com.excilys.cdb.mapper;
 
-import java.sql.ResultSet;
+import java.sql.ResultSet; 
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-import main.java.com.excilys.cdb.dao.DAO;
-import main.java.com.excilys.cdb.model.*;
-import main.java.com.excilys.cdb.service.CRUD;
+import com.excilys.cdb.dao.DAO;
+import com.excilys.cdb.model.*;
+import com.excilys.cdb.service.CRUD;
 
 public class Mapper {
 	

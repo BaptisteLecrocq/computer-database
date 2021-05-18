@@ -1,8 +1,8 @@
-package main.java.com.excilys.cdb.service;
+package com.excilys.cdb.service;
 
-import main.java.com.excilys.cdb.dao.*;
-import main.java.com.excilys.cdb.mapper.Mapper;
-import main.java.com.excilys.cdb.model.*;
+import com.excilys.cdb.dao.*;
+import com.excilys.cdb.mapper.Mapper;
+import com.excilys.cdb.model.*;
 
 import java.util.ArrayList;
 

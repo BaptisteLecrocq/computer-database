@@ -1,8 +1,8 @@
-package main.java.com.excilys.cdb;
+package com.excilys.cdb;
 
-import java.time.LocalDate;
+import java.time.LocalDate; 
 
-import main.java.com.excilys.cdb.ui.CLI;
+import com.excilys.cdb.ui.CLI;
 
 public class main {
 

@@ -1,4 +1,4 @@
-package main.java.com.excilys.cdb.controller;
+package com.excilys.cdb.controller;
 
 import java.time.LocalDate;
 

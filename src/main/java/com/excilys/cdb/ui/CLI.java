@@ -1,14 +1,14 @@
-package main.java.com.excilys.cdb.ui;
+package com.excilys.cdb.ui;
 
-import java.time.LocalDate; 
+import java.time.LocalDate;  
 import java.time.format.DateTimeFormatter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Scanner;
 
-import main.java.com.excilys.cdb.controller.*;
-import main.java.com.excilys.cdb.model.*;
-import main.java.com.excilys.cdb.service.*;
+import com.excilys.cdb.controller.*;
+import com.excilys.cdb.model.*;
+import com.excilys.cdb.service.*;
 
 public class CLI {
 	

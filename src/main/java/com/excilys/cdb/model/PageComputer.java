@@ -1,8 +1,8 @@
-package main.java.com.excilys.cdb.model;
+package com.excilys.cdb.model;
 
-import java.util.ArrayList;
+import java.util.ArrayList; 
 
-import main.java.com.excilys.cdb.service.CRUD;
+import com.excilys.cdb.service.CRUD;
 
 public class PageComputer extends Page{
 	

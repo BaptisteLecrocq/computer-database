@@ -1,8 +1,8 @@
-package main.java.com.excilys.cdb.dao;
+package com.excilys.cdb.dao;
 
-import java.util.Date;
+import java.util.Date; 
 
-import main.java.com.excilys.cdb.model.*;
+import com.excilys.cdb.model.*;
 
 public class test {
 

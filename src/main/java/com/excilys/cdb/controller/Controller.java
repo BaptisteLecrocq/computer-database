@@ -1,11 +1,11 @@
-package main.java.com.excilys.cdb.controller;
+package com.excilys.cdb.controller;
 
-import java.time.LocalDate;
+import java.time.LocalDate; 
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
-import main.java.com.excilys.cdb.model.*;
-import main.java.com.excilys.cdb.service.CRUD;
+import com.excilys.cdb.model.*;
+import com.excilys.cdb.service.CRUD;
 
 public class Controller {
 	
