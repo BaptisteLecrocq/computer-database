@@ -7,63 +7,71 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
 import java.time.LocalDate;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class DAO {
 	
 	private final String countComputer = "SELECT COUNT(*) FROM computer";
 	
-	private final String getAllComputers = "SELECT * FROM computer;";
-	private final String getAllCompanies = "SELECT * FROM company;";
+	private final String getAllComputers = "SELECT id,name,introduced,discontinued,company_id FROM computer;";
+	private final String getAllCompanies = "SELECT id,name FROM company;";
 	private final String addComputer = "INSERT INTO computer (name, introduced, discontinued, company_id) VALUES(?,?,?,?)";
-	private final String getOneComputer = "SELECT * FROM computer WHERE id=?";
+	private final String getOneComputer = "SELECT id,name,introduced,discontinued,company_id FROM computer WHERE id=?";
 	private final String updateComputer = "UPDATE computer SET name = ? ,introduced = ?, discontinued = ?, company_id = ? WHERE id=?";
 	private final String deleteComputer = "DELETE FROM computer WHERE id=?";
-	private final String getComputerPage = "SELECT * FROM computer ORDER BY id LIMIT ? OFFSET ? ";
-	private final String getCompanyPage = "SELECT * FROM company ORDER BY id LIMIT ? OFFSET ?;";
+	private final String getComputerPage = "SELECT id,name,introduced,discontinued,company_id FROM computer ORDER BY id LIMIT ? OFFSET ? ";
+	private final String getCompanyPage = "SELECT id,name FROM company ORDER BY id LIMIT ? OFFSET ?;";
 	
 	private Connection db;
+	
+	private static Logger logger = LoggerFactory.getLogger(DAO.class);
+	
 	
 	//Singleton pattern	
 	private static DAO firstDAO = new DAO();
 	public static DAO getInstance() {
-		return(firstDAO);
+		return (firstDAO);
 	}
 	
-	public ResultSet simpleRequest(String query) {
-		ResultSet results = null;		
+	public Optional<ResultSet> simpleRequest(String query) {
+		Optional<ResultSet> results = Optional.empty();	
 		Statement stmt;
 		open();
 		
 		try {
 			
 			stmt = db.createStatement();
-			results = stmt.executeQuery(query);
+			results = Optional.ofNullable(stmt.executeQuery(query));
 			
 		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.error(e.toString());
 		}
 		
 		return(results);		
 		
 	}
 	
-	public ResultSet countComputer() {
+	public Optional<ResultSet> countComputer() {
 		return(simpleRequest(countComputer));
 	}
 
-	public ResultSet listComputer(){
+	public Optional<ResultSet> listComputer(){
 		return(simpleRequest(getAllComputers));
 	}
 	
-	public ResultSet listCompany(){
+	public Optional<ResultSet> listCompany(){
 		return(simpleRequest(getAllCompanies));
 	}
 
 	
-	public boolean addComputer(String name, LocalDate start, LocalDate end, int company_id){
+	public boolean addComputer(String name, Optional<LocalDate> start, Optional<LocalDate> end, int company_id){
 		
-		int results;
 		open();
 		
 		try {
@@ -72,55 +80,54 @@ public class DAO {
 			ps.setString(1, name);
 			ps.setInt(4, company_id);
 			
-			if(start==null) {
+			if(!start.isPresent()) {
 				ps.setNull(2, 0);
 				
 			}else {
-				ps.setDate(2, Date.valueOf(start));
+				ps.setDate(2, Date.valueOf(start.get()));
 			}
 			
-			if(end==null) {
+			if(!end.isPresent()) {
 				ps.setNull(3, 0);
 				
 			} else {
-				ps.setDate(3, Date.valueOf(end));
+				ps.setDate(3, Date.valueOf(end.get()));
 			}
 			
-			results = ps.executeUpdate();
+			int results = ps.executeUpdate();
 			
 			stop();
 			return true;
 			
-		} catch(Exception e){
-			e.printStackTrace();
+		} catch(SQLException e){
+			logger.error(e.toString());
 			stop();
 			return false;
 		}
 	}
 	
-	public ResultSet findComputer(int id){		
+	public Optional<ResultSet> findComputer(int id){		
 
-		ResultSet results = null;
+		Optional<ResultSet> results = Optional.empty();	
 		open();
 		
 		try {
 			PreparedStatement ps = db.prepareStatement(getOneComputer);
 			ps.setInt(1, id);
-			results = ps.executeQuery();
+			results = Optional.ofNullable(ps.executeQuery());
 			
-		}catch(Exception e) {
-			e.printStackTrace();
-			System.out.println("Computer not found");
-			//A logger
+		}catch(SQLException e) {
+			
+			logger.error(e.toString());
+			
 		}
 		
 		return(results);
 		
 	}
 	
-	public boolean updateComputer(int id, String name, LocalDate start, LocalDate end, int company_id){
-		
-		int results;
+	public boolean updateComputer(int id, String name, Optional<LocalDate> start, Optional<LocalDate> end, int company_id){
+
 		open();
 		
 		try {
@@ -131,28 +138,27 @@ public class DAO {
 			ps.setInt(5, id);
 			
 			
-			if(start==null) {
+			if(!start.isPresent()) {
 				ps.setNull(2, 0);
 				
 			}else {
-				ps.setDate(2, Date.valueOf(start));
+				ps.setDate(2, Date.valueOf(start.get()));
 			}
 			
-			if(end==null) {
+			if(!end.isPresent()) {
 				ps.setNull(3, 0);
 				
 			} else {
-				ps.setDate(3, Date.valueOf(end));
+				ps.setDate(3, Date.valueOf(end.get()));
 			}
 			
-			results = ps.executeUpdate();
+			int results = ps.executeUpdate();
 			stop();
 			return true;
 			
-		} catch(Exception e){
-			//A logger
-			System.out.println("Computer not Found");
-			e.printStackTrace();
+		} catch(SQLException e){
+			
+			logger.error(e.toString());
 			stop();
 			return false;
 		}
@@ -160,65 +166,62 @@ public class DAO {
 	
 	public boolean deleteComputer(int id){
 
-		int results;
 		open();
 		
 		try {
 					
 			PreparedStatement ps = db.prepareStatement(deleteComputer);
 			ps.setInt(1,id);
-			results = ps.executeUpdate();
+			int results = ps.executeUpdate();
 			
 			stop();
 			return true;
 			
 		}catch (SQLException e) {
-			//A logger
-			e.printStackTrace();
-			System.out.println("Computer not found");
-			
+			logger.error(e.toString());			
 			stop();
 			return false;
 		}
 	}
 	
-	public ResultSet getPageComputer (int start, int taille){
+	public Optional<ResultSet> getPageComputer (int start, int taille){
 		
-		ResultSet results = null;
+		Optional<ResultSet> results = Optional.empty();
 		open();
 		
 		try {
 			PreparedStatement ps = db.prepareStatement(getComputerPage);
 			ps.setInt(1, taille);
 			ps.setInt(2, start);
-			results = ps.executeQuery();
+			results = Optional.ofNullable(ps.executeQuery());
 					
 		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.error(e.toString());
 		}
 		
 		return(results);
 	}
 	
-	public ResultSet getPageCompany (int start, int taille){
+	public Optional<ResultSet> getPageCompany (int start, int taille){
 		
-		ResultSet results = null;
+		Optional<ResultSet> results = Optional.empty();
 		open();
 		
 		try {
 			PreparedStatement ps = db.prepareStatement(getCompanyPage);
 			ps.setInt(1, taille);
 			ps.setInt(2, start);
-			results = ps.executeQuery();
+			results = Optional.ofNullable(ps.executeQuery());
 					
 		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.error(e.toString());
 		}
 		
 		return(results);
 	}
 	
 	public void open() {
+
 		// URL de la source de donnée String 
 		String url = "jdbc:mysql://127.0.0.1:3306/computer-database-db" ;
 
@@ -226,15 +229,16 @@ public class DAO {
 			db = DriverManager.getConnection(url,"admincdb","qwerty1234");
 		
 		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.error(e.toString());
 		}
 	}
 	
 	public void stop() {
+
 		try {
 			db.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.error(e.toString());
 		}
 	}
 

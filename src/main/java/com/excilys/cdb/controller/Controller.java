@@ -2,8 +2,10 @@ package com.excilys.cdb.controller;
 
 import java.time.LocalDate; 
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.Scanner;
 
+import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.model.*;
 import com.excilys.cdb.service.CRUD;
 
@@ -31,46 +33,77 @@ public class Controller {
 		val = new Validation();
 	}
 	
-	public boolean initPage(int type,int taille) {
+	public Optional<String> initPage(Class type, int taille) {
 		
 		Page.count = service.countComputer();
+		Optional<String> message = Optional.empty();
 		
-		if(val.tailleValide(taille)) {
-			if(type == 0) {
-				page = computerFactory.getPage(0, taille);
+		if (val.tailleValide(taille)) {
+			try {
+				
+				if (type == Computer.class) {				
+					page = computerFactory.getPage(0, taille);
+					
+				} else if (type == Company.class) {
+					page = companyFactory.getPage(0, taille);
+				}
+				
+			} catch (NotFoundException e) {
+				message = Optional.of(e.toString());
 			}
-			else if(type == 1) {
-				page = companyFactory.getPage(0, taille);
-			}
-			return true;
+			
+		} else {
+			message = Optional.of("Invalid size");
 		}
-		else {
-			return false;
+		
+		return (message);		
+
+	}
+	
+	public String nextPage() {
+		String message;
+		
+		try {
+			page = page.nextPage();
+			message = "Page suivante :";
+			
+		} catch (NotFoundException e) {
+			message = e.toString();
 		}
+		return (message);
 	}
 	
-	public void nextPage() {
-		page = page.nextPage();
+	public String previousPage() {
+		String message;
+		
+		try {
+			page = page.previousPage();
+			message = "Page précédente :";
+			
+		} catch (NotFoundException e) {
+			message = e.toString();
+		}
+		return (message);
 	}
 	
-	public void previousPage() {
-		page = page.previousPage();
-	}
-	
-	public Computer getComputerById(int id) {
-		return(service.getComputerById(id));
+	public String getComputerById(int id) {
+		try {
+			return (service.getComputerById(id).toString());
+		} catch (NotFoundException e) {
+			return (e.toString());
+		}
 	}
 	
 	public boolean addComputer() {
-		return(service.addComputer(computer));
+		return (service.addComputer(computer));
 	}
 
 	public boolean updateComputer() {
-		return(service.updateComputer(computer));
+		return (service.updateComputer(computer));
 	}
 	
 	public boolean deleteComputer(int idComputer) {
-		return(service.deleteComputer(idComputer));
+		return (service.deleteComputer(idComputer));
 	}
 	
 	
@@ -87,24 +120,24 @@ public class Controller {
 	}
 
 	public boolean setName(String name) {
-		if(val.nameValide(name)) {
+		if (val.nameValide(name)) {
 			this.name = name;
 			return true;
-		}
-		else {
+		
+		} else {
 			return false;
 		}
 		
 	}
 
 	public boolean setStart(String start) {
-		if(start.equals("n")) {
+		if (start.equals("n")) {
 			this.introduced = null;
 			return true;
-		}
-		else {
+		
+		} else {
 			try {
-				this.introduced = LocalDate.parse(start,formatter);
+				this.introduced = LocalDate.parse(start, formatter);
 				return true;
 			} catch (Exception e) {
 				return false;
@@ -113,18 +146,18 @@ public class Controller {
 	}
 
 	public boolean setEnd(String end) {
-		if(end.equals("n")) {
+		if (end.equals("n")) {
 			this.discontinued = null;
 			return true;
-		}
-		else {
+		
+		} else {
 			try {
-				LocalDate dateTest = LocalDate.parse(end,formatter);
-				if(val.startBeforeEndValide(this.getStart(),dateTest)) {
+				LocalDate dateTest = LocalDate.parse(end, formatter);
+				if (val.startBeforeEndValide(this.getStart(), dateTest)) {
 					this.discontinued = dateTest;
 					return true;
-				}
-				else {
+				
+				} else {
 					return false;
 				}
 			} catch (Exception e) {

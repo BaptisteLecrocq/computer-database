@@ -36,13 +36,12 @@ public class Computer {
 			
 		
 			String query = "SELECT * FROM computer;";
-			ResultSet results = null;
 			
 			int id;
 			computerIdList = new ArrayList<Integer>();
 			
 			Statement stmt = con.createStatement();
-			results = stmt.executeQuery(query);
+			ResultSet results = stmt.executeQuery(query);
 			
 			while(results.next()) {
 				
@@ -66,36 +65,6 @@ public class Computer {
 		this.manufacturer = builder.manufacturer;
 		
 	}
-	
-	/*
-	public Computer(int id, String name, LocalDate start, LocalDate end, int company_id) throws IllegalArgumentException{
-		
-		if(id<0) {
-			this.id = computerIdList.get(computerIdList.size()-1) + 1;
-		}
-		else {
-			this.id = id;
-		}
-		if(name==null) {
-			System.out.println("Name can't be null");
-			throw new IllegalArgumentException();
-		}
-		else {
-			this.name = name;
-		}
-		
-		if(start!=null && end!=null) {
-			if(end.isBefore(start)) {
-				System.out.println("Discontuation date must be higher than Introduction date");
-				throw new IllegalArgumentException();
-			}
-		}
-		this.start = start;
-		this.end = end;		
-		this.manufacturer = new Company(company_id);
-	}
-	*/
-
 	
 	public int getId() {
 		return id;
@@ -131,7 +100,7 @@ public class Computer {
 
 	public Company getManufacturer() {
 		if(manufacturer==null) {
-			return(new Company(-1,null));
+			return(new Company(0,null));
 		}
 		else {
 			return manufacturer;

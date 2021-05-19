@@ -1,6 +1,7 @@
 package com.excilys.cdb.service;
 
 import com.excilys.cdb.dao.*;
+import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.mapper.Mapper;
 import com.excilys.cdb.model.*;
 
@@ -20,11 +21,11 @@ public class CRUD {
 		return(map.countComputer());
 	}
 	
-	public ArrayList<Computer> listComputer(){
+	public ArrayList<Computer> listComputer() throws NotFoundException{
 		return(map.listComputer());
 	}
 	
-	public ArrayList<Company> listCompany(){
+	public ArrayList<Company> listCompany() throws NotFoundException{
 		return(map.listCompany());
 	}
 	
@@ -40,14 +41,14 @@ public class CRUD {
 		return(map.deleteComputer(id));
 	}	
 	
-	public Computer getComputerById(int id) {		
+	public Computer getComputerById(int id) throws NotFoundException {		
 		return(map.getOneComputer(id));		
 	}
 
-	public ArrayList<Computer> pageComputerList(int start, int taille){
+	public ArrayList<Computer> pageComputerList(int start, int taille) throws NotFoundException{
 		return(map.getPageComputer(start,taille));
 	}
-	public ArrayList<Company> pageCompanyList(int start, int taille){
+	public ArrayList<Company> pageCompanyList(int start, int taille) throws NotFoundException{
 		return(map.getPageCompany(start,taille));
 	}	
 }

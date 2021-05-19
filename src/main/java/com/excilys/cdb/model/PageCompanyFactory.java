@@ -1,10 +1,12 @@
 package com.excilys.cdb.model;
 
-public class PageCompanyFactory extends PageFactory{
+import com.excilys.cdb.exception.NotFoundException;
+
+public class PageCompanyFactory extends PageFactory {
 	
 	@Override
-	protected PageCompany createPage(int start,int taille) {
-	    return new PageCompany(start,taille);
+	protected PageCompany createPage(int start, int taille) throws NotFoundException {
+	    return new PageCompany(start, taille);
 	  }
 	
 }

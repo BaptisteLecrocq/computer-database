@@ -1,19 +1,24 @@
 package com.excilys.cdb.mapper;
 
 import java.sql.ResultSet; 
+
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.excilys.cdb.dao.DAO;
+import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.model.*;
-import com.excilys.cdb.service.CRUD;
 
 public class Mapper {
 	
 	DAO connection = DAO.getInstance();
-	private final int computerType = 0;
-	private final int companyType = 1;
+	
+	private static Logger logger = LoggerFactory.getLogger(Mapper.class);
 	
 	//Singleton pattern	
 	private static Mapper firstMapper = new Mapper();
@@ -21,38 +26,45 @@ public class Mapper {
 		return(firstMapper);
 	}
 	
+	private Mapper(){}	
+
 	public int countComputer() {
-		ResultSet results = connection.countComputer();
+		Optional<ResultSet> results = connection.countComputer();
 		int i = 0;
 		
-		try {
-			results.next();
-			i = results.getInt(1);
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
+		if(results.isPresent()) {
+			try {
+				results.get().next();
+				i = results.get().getInt(1);
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}			
+			System.out.println("Nb of values in computer database : "+i);
+		}
+		else {
+			//Exception
 		}
 		
-		System.out.println("Nb of values in computer database : "+i);
 		return(i);
 	}
 	
-	public ArrayList<Computer> listComputer (){
-		return(Map(computerType,connection.listComputer()));
+	public ArrayList<Computer> listComputer () throws NotFoundException{
+		return(map(Computer.class,connection.listComputer()));
 	}
 	
-	public ArrayList<Company> listCompany(){
-		return(Map(companyType,connection.listCompany()));
+	public ArrayList<Company> listCompany() throws NotFoundException{
+		return(map(Company.class,connection.listCompany()));
 	}
 	
 	public boolean addComputer(Computer computer) {
-		return(connection.addComputer(computer.getName(), computer.getStart(), computer.getEnd(), computer.getCompanyId()));
+		return(connection.addComputer(computer.getName(), Optional.ofNullable(computer.getStart()), Optional.ofNullable(computer.getEnd()), computer.getCompanyId()));
 	}
 	
-	public Computer getOneComputer(int id) {
+	public Computer getOneComputer(int id) throws NotFoundException {
 		
 		Computer computer;
-		ArrayList test =  Map(computerType,connection.findComputer(id));
+		ArrayList test =  map(Computer.class,connection.findComputer(id));
 		
 		if(test.size()>0) {
 			computer = (Computer)test.get(0);
@@ -65,47 +77,60 @@ public class Mapper {
 	}
 	
 	public boolean updateComputer(Computer computer) {
-		return(connection.updateComputer(computer.getId(), computer.getName(), computer.getStart(), computer.getEnd(), computer.getCompanyId()));
+		return(connection.updateComputer(computer.getId(), computer.getName(), Optional.ofNullable(computer.getStart()), Optional.ofNullable(computer.getEnd()), computer.getCompanyId()));
 	}
 	
 	public boolean deleteComputer(int id) {
 		return(connection.deleteComputer(id));
 	}
 	
-	public ArrayList<Computer> getPageComputer(int start, int taille){
-		return(Map(computerType,connection.getPageComputer(start,taille)));
+	public ArrayList<Computer> getPageComputer(int start, int taille) throws NotFoundException{
+		return(map(Computer.class,connection.getPageComputer(start,taille)));
 	}
 	
-	public ArrayList<Company> getPageCompany(int start, int taille){
-		return(Map(companyType,connection.getPageCompany(start,taille)));
+	public ArrayList<Company> getPageCompany(int start, int taille) throws NotFoundException{
+		return(map(Company.class,connection.getPageCompany(start,taille)));
 	}
 	
-	public ArrayList Map(int type, ResultSet results){		
+	public ArrayList map(Class type, Optional<ResultSet> optional) throws NotFoundException{		
 
-		ArrayList list = new ArrayList();		
-
+		ArrayList list = new ArrayList();
+		ResultSet results = optional.orElse(null);
+		
 		try {
-			while(results.next()) {
-				
-				if(type==computerType) {
-					Computer buffer = new Computer
-							.ComputerBuilder(results.getString("computer.name"))
-							.withId(results.getInt("computer.id"))
-							.withStart(results.getObject("computer.introduced",LocalDate.class))
-							.withEnd(results.getObject("computer.discontinued",LocalDate.class))
-							.withManufacturer(results.getInt("computer.company_id"))
-							.build();
-					
-					list.add(buffer);
-				}
-				else if(type==companyType){
-					Company buffer = new Company(results.getInt("company.id"), results.getString("company.name"));				
-					list.add(buffer);
-				}				
+			
+			//isBeforeFirst = false => Empty ResultSet
+			if(!optional.isPresent()||!results.isBeforeFirst()) {
+				throw new NotFoundException("Empty ResultSet : the request didn't find anything in the database");
 			}
+			else {
+				
+			
+			
+				while(results.next()) {
+					
+					if(type==Computer.class) {
+						Computer buffer = new Computer
+								.ComputerBuilder(results.getString("computer.name"))
+								.withId(results.getInt("computer.id"))
+								.withStart(results.getObject("computer.introduced",LocalDate.class))
+								.withEnd(results.getObject("computer.discontinued",LocalDate.class))
+								.withManufacturer(results.getInt("computer.company_id"))
+								.build();
+						
+						list.add(buffer);
+					}
+					else if(type==Company.class){
+						Company buffer = new Company(results.getInt("company.id"), results.getString("company.name"));				
+						list.add(buffer);
+					}				
+				}
+			}
+			
 			connection.stop();
+			
 		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.error(e.toString());
 		}
 		
 		return(list);

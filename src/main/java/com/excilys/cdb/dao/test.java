@@ -25,7 +25,7 @@ public class test {
 		//test.findComputer("testa");
 		
 		
-		test.stop();		
+		test.stop();
 
 	}
 }
