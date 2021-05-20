@@ -128,7 +128,7 @@ public class CLI {
 				for (String m:menu) {
 					System.out.println(m + "\n");
 				}
-				status = MenuChoice.values()[sc.nextInt()];
+				status = MenuChoice.values()[sc.nextInt() + 1];
 				
 				clean();
 				break;

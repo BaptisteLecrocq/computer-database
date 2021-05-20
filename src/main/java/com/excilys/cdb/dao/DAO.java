@@ -1,6 +1,6 @@
 package com.excilys.cdb.dao;
 
-import java.sql.Connection;
+import java.sql.Connection; 
 import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 public class DAO {
 	
 	private final String countComputer = "SELECT COUNT(*) FROM computer";
+	private final String getLastComputerId = "SELECT max(id) FROM computer;";
 	
 	private final String getAllComputers = "SELECT id,name,introduced,discontinued,company_id FROM computer;";
 	private final String getAllCompanies = "SELECT id,name FROM company;";
@@ -28,7 +29,8 @@ public class DAO {
 	private final String getComputerPage = "SELECT id,name,introduced,discontinued,company_id FROM computer ORDER BY id LIMIT ? OFFSET ? ";
 	private final String getCompanyPage = "SELECT id,name FROM company ORDER BY id LIMIT ? OFFSET ?;";
 	
-	private Connection db;
+	private static Connection con;
+	private static Database db = Database.getInstance();
 	
 	private static Logger logger = LoggerFactory.getLogger(DAO.class);
 	
@@ -39,6 +41,8 @@ public class DAO {
 		return (firstDAO);
 	}
 	
+	private DAO() {}
+	
 	public Optional<ResultSet> simpleRequest(String query) {
 		Optional<ResultSet> results = Optional.empty();	
 		Statement stmt;
@@ -46,7 +50,7 @@ public class DAO {
 		
 		try {
 			
-			stmt = db.createStatement();
+			stmt = con.createStatement();
 			results = Optional.ofNullable(stmt.executeQuery(query));
 			
 		} catch (SQLException e) {
@@ -69,6 +73,10 @@ public class DAO {
 		return(simpleRequest(getAllCompanies));
 	}
 
+	public Optional<ResultSet> getLastComputerId() {
+		return(simpleRequest(getLastComputerId));
+	}
+	
 	
 	public boolean addComputer(String name, Optional<LocalDate> start, Optional<LocalDate> end, int company_id){
 		
@@ -76,7 +84,7 @@ public class DAO {
 		
 		try {
 			
-			PreparedStatement ps = db.prepareStatement(addComputer);
+			PreparedStatement ps = con.prepareStatement(addComputer);
 			ps.setString(1, name);
 			ps.setInt(4, company_id);
 			
@@ -112,7 +120,7 @@ public class DAO {
 		open();
 		
 		try {
-			PreparedStatement ps = db.prepareStatement(getOneComputer);
+			PreparedStatement ps = con.prepareStatement(getOneComputer);
 			ps.setInt(1, id);
 			results = Optional.ofNullable(ps.executeQuery());
 			
@@ -132,7 +140,7 @@ public class DAO {
 		
 		try {
 			
-			PreparedStatement ps = db.prepareStatement(updateComputer);
+			PreparedStatement ps = con.prepareStatement(updateComputer);
 			ps.setString(1,name);
 			ps.setInt(4, company_id);
 			ps.setInt(5, id);
@@ -170,7 +178,7 @@ public class DAO {
 		
 		try {
 					
-			PreparedStatement ps = db.prepareStatement(deleteComputer);
+			PreparedStatement ps = con.prepareStatement(deleteComputer);
 			ps.setInt(1,id);
 			int results = ps.executeUpdate();
 			
@@ -190,7 +198,7 @@ public class DAO {
 		open();
 		
 		try {
-			PreparedStatement ps = db.prepareStatement(getComputerPage);
+			PreparedStatement ps = con.prepareStatement(getComputerPage);
 			ps.setInt(1, taille);
 			ps.setInt(2, start);
 			results = Optional.ofNullable(ps.executeQuery());
@@ -208,7 +216,7 @@ public class DAO {
 		open();
 		
 		try {
-			PreparedStatement ps = db.prepareStatement(getCompanyPage);
+			PreparedStatement ps = con.prepareStatement(getCompanyPage);
 			ps.setInt(1, taille);
 			ps.setInt(2, start);
 			results = Optional.ofNullable(ps.executeQuery());
@@ -219,24 +227,31 @@ public class DAO {
 		
 		return(results);
 	}
-	
+
 	public void open() {
 
-		// URL de la source de donnée String 
-		String url = "jdbc:mysql://127.0.0.1:3306/computer-database-db" ;
-
 		try {
-			db = DriverManager.getConnection(url,"admincdb","qwerty1234");
-		
+			con = DriverManager.getConnection(db.getUrl(),db.getUsername(),db.getPassword());
+			
 		} catch (SQLException e) {
 			logger.error(e.toString());
 		}
 	}
 	
+	
+
+	public static Connection getCon() {
+		return con;
+	}
+
+	public static Database getDb() {
+		return db;
+	}
+
 	public void stop() {
 
 		try {
-			db.close();
+			con.close();
 		} catch (SQLException e) {
 			logger.error(e.toString());
 		}

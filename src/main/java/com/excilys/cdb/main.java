@@ -15,9 +15,9 @@ public class main {
 
 	public static void main(String[] args) {
 		// assume SLF4J is bound to logback in the current environment
-		  LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+		  //LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
 		  // print logback's internal status
-		  StatusPrinter.print(lc);
+		  //StatusPrinter.print(lc);
 
 		  Logger logger = LoggerFactory.getLogger(main.class);
 		  logger.debug("Coucou");

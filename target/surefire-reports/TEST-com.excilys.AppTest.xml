@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="com.excilys.AppTest" time="0.05" tests="1" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="com.excilys.AppTest" time="0.521" tests="1" errors="0" skipped="0" failures="0">
   <properties>
     <property name="sun.desktop" value="gnome"/>
     <property name="awt.toolkit" value="sun.awt.X11.XToolkit"/>
@@ -7,7 +7,7 @@
     <property name="java.specification.version" value="1.8"/>
     <property name="sun.cpu.isalist" value=""/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
-    <property name="java.class.path" value="/home/excilys/Documents/CDBMaven/cdb/target/test-classes:/home/excilys/Documents/CDBMaven/cdb/target/classes:/home/excilys/.m2/repository/junit/junit/4.11/junit-4.11.jar:/home/excilys/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/home/excilys/.m2/repository/mysql/mysql-connector-java/8.0.25/mysql-connector-java-8.0.25.jar:/home/excilys/.m2/repository/com/google/protobuf/protobuf-java/3.11.4/protobuf-java-3.11.4.jar:/home/excilys/.m2/repository/org/mockito/mockito-all/1.10.19/mockito-all-1.10.19.jar:/home/excilys/.m2/repository/ch/qos/logback/logback-classic/1.2.3/logback-classic-1.2.3.jar:/home/excilys/.m2/repository/ch/qos/logback/logback-core/1.2.3/logback-core-1.2.3.jar:/home/excilys/.m2/repository/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar:"/>
+    <property name="java.class.path" value="/home/excilys/Documents/CDBMaven/cdb/target/test-classes:/home/excilys/Documents/CDBMaven/cdb/target/classes:/home/excilys/.m2/repository/junit/junit/4.11/junit-4.11.jar:/home/excilys/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/home/excilys/.m2/repository/mysql/mysql-connector-java/8.0.25/mysql-connector-java-8.0.25.jar:/home/excilys/.m2/repository/com/google/protobuf/protobuf-java/3.11.4/protobuf-java-3.11.4.jar:/home/excilys/.m2/repository/org/mockito/mockito-all/1.10.19/mockito-all-1.10.19.jar:/home/excilys/.m2/repository/ch/qos/logback/logback-classic/1.2.3/logback-classic-1.2.3.jar:/home/excilys/.m2/repository/ch/qos/logback/logback-core/1.2.3/logback-core-1.2.3.jar:/home/excilys/.m2/repository/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar:/home/excilys/.m2/repository/com/h2database/h2/1.4.200/h2-1.4.200.jar:"/>
     <property name="java.vm.vendor" value="Private Build"/>
     <property name="sun.arch.data.model" value="64"/>
     <property name="java.vendor.url" value="http://java.oracle.com/"/>
@@ -17,8 +17,8 @@
     <property name="user.country" value="FR"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="sun.boot.library.path" value="/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64"/>
-    <property name="sun.java.command" value="/home/excilys/Documents/CDBMaven/cdb/target/surefire/surefirebooter1791088681546547083.jar /home/excilys/Documents/CDBMaven/cdb/target/surefire 2021-05-19T10-26-03_493-jvmRun1 surefire531482321166000664tmp surefire_02769494909684889452tmp"/>
-    <property name="surefire.test.class.path" value="/home/excilys/Documents/CDBMaven/cdb/target/test-classes:/home/excilys/Documents/CDBMaven/cdb/target/classes:/home/excilys/.m2/repository/junit/junit/4.11/junit-4.11.jar:/home/excilys/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/home/excilys/.m2/repository/mysql/mysql-connector-java/8.0.25/mysql-connector-java-8.0.25.jar:/home/excilys/.m2/repository/com/google/protobuf/protobuf-java/3.11.4/protobuf-java-3.11.4.jar:/home/excilys/.m2/repository/org/mockito/mockito-all/1.10.19/mockito-all-1.10.19.jar:/home/excilys/.m2/repository/ch/qos/logback/logback-classic/1.2.3/logback-classic-1.2.3.jar:/home/excilys/.m2/repository/ch/qos/logback/logback-core/1.2.3/logback-core-1.2.3.jar:/home/excilys/.m2/repository/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar:"/>
+    <property name="sun.java.command" value="/home/excilys/Documents/CDBMaven/cdb/target/surefire/surefirebooter7103689005789819387.jar /home/excilys/Documents/CDBMaven/cdb/target/surefire 2021-05-20T09-48-51_969-jvmRun1 surefire4205740315774674064tmp surefire_07246899492444834577tmp"/>
+    <property name="surefire.test.class.path" value="/home/excilys/Documents/CDBMaven/cdb/target/test-classes:/home/excilys/Documents/CDBMaven/cdb/target/classes:/home/excilys/.m2/repository/junit/junit/4.11/junit-4.11.jar:/home/excilys/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/home/excilys/.m2/repository/mysql/mysql-connector-java/8.0.25/mysql-connector-java-8.0.25.jar:/home/excilys/.m2/repository/com/google/protobuf/protobuf-java/3.11.4/protobuf-java-3.11.4.jar:/home/excilys/.m2/repository/org/mockito/mockito-all/1.10.19/mockito-all-1.10.19.jar:/home/excilys/.m2/repository/ch/qos/logback/logback-classic/1.2.3/logback-classic-1.2.3.jar:/home/excilys/.m2/repository/ch/qos/logback/logback-core/1.2.3/logback-core-1.2.3.jar:/home/excilys/.m2/repository/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar:/home/excilys/.m2/repository/com/h2database/h2/1.4.200/h2-1.4.200.jar:"/>
     <property name="sun.cpu.endian" value="little"/>
     <property name="user.home" value="/home/excilys"/>
     <property name="user.language" value="fr"/>
@@ -30,7 +30,7 @@
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="java.awt.graphicsenv" value="sun.awt.X11GraphicsEnvironment"/>
-    <property name="surefire.real.class.path" value="/home/excilys/Documents/CDBMaven/cdb/target/surefire/surefirebooter1791088681546547083.jar"/>
+    <property name="surefire.real.class.path" value="/home/excilys/Documents/CDBMaven/cdb/target/surefire/surefirebooter7103689005789819387.jar"/>
     <property name="sun.boot.class.path" value="/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/resources.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/sunrsasign.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jsse.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jce.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/charsets.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jfr.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/classes"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="1.8.0_292-8u292-b10-0ubuntu1~18.04-b10"/>
@@ -58,5 +58,5 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="52.0"/>
   </properties>
-  <testcase name="shouldAnswerWithTrue" classname="com.excilys.AppTest" time="0.002"/>
+  <testcase name="shouldAnswerWithTrue" classname="com.excilys.AppTest" time="0.033"/>
 </testsuite>
