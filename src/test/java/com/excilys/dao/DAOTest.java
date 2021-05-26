@@ -58,9 +58,11 @@ public class DAOTest {
     
     @Test
     public void findComputerNotinH2ButInDB() {
+    	String computerDbName = "testupdatearch";
     	ResultSet results = daotest.findComputer(592).get();
     	try {
-			assertFalse(results.next());
+    		results.next();
+			assertFalse(computerDbName.equals(results.getString("name")));
 			
 		} catch (SQLException e) {
 			logger.debug(e.toString());

@@ -1,6 +1,6 @@
 package com.excilys.cdb.dao;
 
-import java.io.IOException;
+import java.io.IOException; 
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -19,6 +19,7 @@ public class Database {
 	private static String url;
 	private static String username;
 	private static String password;
+	private static String driver;
 	
 	public static String getUrl() {
 		return url;
@@ -31,6 +32,10 @@ public class Database {
 	public static String getPassword() {
 		return password;
 	}
+	
+	public static String getDriver() {
+		return driver;
+	}
 
 	static {
 		Properties properties = new Properties();
@@ -42,7 +47,8 @@ public class Database {
 			properties.load(configFile);
 			url = properties.getProperty("url");
 			username = properties.getProperty("username");
-			password = properties.getProperty("password");				
+			password = properties.getProperty("password");
+			driver = properties.getProperty("driverClassName");
 			
 		} catch (IOException e) {
 			logger.debug(e.toString());

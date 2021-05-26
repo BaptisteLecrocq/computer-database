@@ -4,9 +4,9 @@ import com.excilys.cdb.exception.NotFoundException;
 
 public abstract class PageFactory {
 	
-	public Page getPage(int start, int taille) throws NotFoundException {
-	    return createPage(start, taille);
+	public Page getPage(int start, int taille, int numberPage) throws NotFoundException {
+	    return createPage(start, taille, numberPage);
 	  }
 
-	  protected abstract Page createPage(int start, int taille) throws NotFoundException;	
+	  protected abstract Page createPage(int start, int taille, int numberPage) throws NotFoundException;	
 }

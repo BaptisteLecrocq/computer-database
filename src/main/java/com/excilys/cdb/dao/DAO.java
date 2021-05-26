@@ -1,6 +1,6 @@
 package com.excilys.cdb.dao;
 
-import java.sql.Connection; 
+import java.sql.Connection;  
 import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -228,18 +228,6 @@ public class DAO {
 		return(results);
 	}
 
-	public void open() {
-
-		try {
-			con = DriverManager.getConnection(db.getUrl(),db.getUsername(),db.getPassword());
-			
-		} catch (SQLException e) {
-			logger.error(e.toString());
-		}
-	}
-	
-	
-
 	public static Connection getCon() {
 		return con;
 	}
@@ -247,6 +235,22 @@ public class DAO {
 	public static Database getDb() {
 		return db;
 	}
+	
+	public void open() {
+
+		try {
+
+			Class.forName(Database.getDriver());
+			con = DriverManager.getConnection(Database.getUrl(),Database.getUsername(),Database.getPassword());
+			
+		} catch (SQLException e) {
+			logger.error(e.toString());
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
 
 	public void stop() {
 

@@ -13,16 +13,19 @@ import ch.qos.logback.core.util.StatusPrinter;
 
 public class main {
 
-	public static void main(String[] args) {
+	//int test = 1;
+	
+	public final static void main(String[] args) {
 		// assume SLF4J is bound to logback in the current environment
-		  //LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-		  // print logback's internal status
-		  //StatusPrinter.print(lc);
+		//LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+		// print logback's internal status
+		//StatusPrinter.print(lc);
 
-		  Logger logger = LoggerFactory.getLogger(main.class);
-		  logger.debug("Coucou");
+		Logger logger = LoggerFactory.getLogger(main.class);
+		logger.debug("Coucou");
 		  
-		CLI test = new CLI();
+		  CLI test = new CLI();
+		
 
 	}
 

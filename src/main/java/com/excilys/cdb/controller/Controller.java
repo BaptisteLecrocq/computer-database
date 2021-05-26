@@ -35,6 +35,12 @@ public class Controller {
 	
 	public Optional<String> initPage(Class type, int taille) {
 		
+		return (this.initPage(type, taille, 0));		
+
+	}
+	
+	public Optional<String> initPage(Class type, int taille, int numberPage) {
+		
 		Page.count = service.countComputer();
 		Optional<String> message = Optional.empty();
 		
@@ -42,10 +48,10 @@ public class Controller {
 			try {
 				
 				if (type == Computer.class) {				
-					page = computerFactory.getPage(0, taille);
+					page = computerFactory.getPage(numberPage*taille, taille, numberPage);
 					
 				} else if (type == Company.class) {
-					page = companyFactory.getPage(0, taille);
+					page = companyFactory.getPage(numberPage*taille, taille, numberPage);
 				}
 				
 			} catch (NotFoundException e) {

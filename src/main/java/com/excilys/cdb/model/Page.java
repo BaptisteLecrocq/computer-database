@@ -1,5 +1,7 @@
 package com.excilys.cdb.model;
 
+import java.util.ArrayList;
+
 import com.excilys.cdb.exception.NotFoundException;
 
 public abstract class Page {
@@ -27,6 +29,18 @@ public abstract class Page {
 
 	public void setStart(int start) {
 		this.start = start;
+	}
+	
+	public int getCount() {
+		return count;
+	}
+	
+	public ArrayList<?> getElements(){
+		return getElements();
+	}
+	
+	public int getPageNumber() {
+		return pageNumber;
 	}
 	
 	

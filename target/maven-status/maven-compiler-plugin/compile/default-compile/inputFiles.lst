@@ -8,6 +8,7 @@
 /home/excilys/Documents/CDBMaven/cdb/src/main/java/com/excilys/cdb/exception/ConnectionException.java
 /home/excilys/Documents/CDBMaven/cdb/src/main/java/com/excilys/cdb/service/CRUD.java
 /home/excilys/Documents/CDBMaven/cdb/src/main/java/com/excilys/cdb/ui/MenuChoice.java
+/home/excilys/Documents/CDBMaven/cdb/src/main/java/com/excilys/cdb/dao/Database.java
 /home/excilys/Documents/CDBMaven/cdb/src/main/java/com/excilys/cdb/model/Computer.java
 /home/excilys/Documents/CDBMaven/cdb/src/main/java/com/excilys/cdb/model/PageComputerFactory.java
 /home/excilys/Documents/CDBMaven/cdb/src/main/java/com/excilys/cdb/model/Page.java
