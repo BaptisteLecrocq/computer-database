@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jstl/fmt" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,7 +10,7 @@
 	<link href="../../cdb/static/css/bootstrap.min.css" rel="stylesheet" media="screen">
 	<link href="../../cdb/static/css/font-awesome.css" rel="stylesheet" media="screen">
 	<link href="../../cdb/static/css/main.css" rel="stylesheet" media="screen">
-	<title>Insert title here</title>
+	<title>Dashboard</title>
 </head>
 <body>
 
@@ -37,7 +37,8 @@
                     </form>
                 </div>
                 <div class="pull-right">
-                    <a class="btn btn-success" id="addComputer" href="addComputer.html">Add Computer</a> 
+                	<c:url value="/add" var="lienAdd" />
+                    <a class="btn btn-success" id="addComputer" href="${ lienAdd }">Add Computer</a> 
                     <a class="btn btn-default" id="editComputer" href="#" onclick="$.fn.toggleEditMode();">Edit</a>
                 </div>
             </div>
@@ -158,7 +159,8 @@
               <li>
               	<c:choose>
                 		<c:when test="${ (pageNumber + 5) > count/12 }">
-                			<c:set var="correctNumber" value="${ pageNumber }" />
+                			<c:set var="bufferNumber" value="${ count/12 }" />
+                			<fmt:parseNumber var="correctNumber" integerOnly="true" type="number" value="${ count/12 }" />
                 		</c:when>
                 		<c:otherwise>
                 			<c:set var="correctNumber" value="${ pageNumber + 5 }" />
@@ -170,14 +172,14 @@
                     <a href="<c:out value="${ lienDashboardNext }" default="#" />" aria-label="Next">
                       <span aria-hidden="true">&raquo;</span>
                     </a>
-            </li>
-        </ul>
-        </div>
+	            </li>
+	        </ul>
 
-        <div class="btn-group btn-group-sm pull-right" role="group" >
-            <button type="button" class="btn btn-default">10</button>
-            <button type="button" class="btn btn-default">50</button>
-            <button type="button" class="btn btn-default">100</button>
+	        <div class="btn-group btn-group-sm pull-right" role="group" >
+	            <button type="button" class="btn btn-default">10</button>
+	            <button type="button" class="btn btn-default">50</button>
+	            <button type="button" class="btn btn-default">100</button>
+	        </div>
         </div>
 
     </footer>

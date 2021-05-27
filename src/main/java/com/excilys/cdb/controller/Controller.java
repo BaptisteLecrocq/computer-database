@@ -2,10 +2,17 @@ package com.excilys.cdb.controller;
 
 import java.time.LocalDate; 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Scanner;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.excilys.cdb.beans.CompanyBean;
+import com.excilys.cdb.beans.ComputerBean;
 import com.excilys.cdb.exception.NotFoundException;
+import com.excilys.cdb.mapper.Mapper;
 import com.excilys.cdb.model.*;
 import com.excilys.cdb.service.CRUD;
 
@@ -26,6 +33,7 @@ public class Controller {
 	private int company_id;
 	
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	private static Logger logger = LoggerFactory.getLogger(Controller.class);
 
 	
 	public Controller() {
@@ -92,6 +100,30 @@ public class Controller {
 		return (message);
 	}
 	
+	
+	
+	public ArrayList<Computer> listComputer(){
+		ArrayList<Computer> computerList = new ArrayList<Computer>();
+		try {
+			computerList = service.listComputer();
+		} catch (NotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		return(computerList);
+	}
+	
+	public ArrayList<Company> listCompany(){
+		ArrayList<Company> companyList = new ArrayList<Company>();
+		try {
+			companyList = service.listCompany();
+		} catch (NotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		return(companyList);
+	}
+	
 	public String getComputerById(int id) {
 		try {
 			return (service.getComputerById(id).toString());
@@ -113,6 +145,82 @@ public class Controller {
 	}
 	
 	
+	public void addComputerBean(ComputerBean cbean) {
+		
+		Optional<String> name = Optional.ofNullable(cbean.getName());
+		Optional<String> introduced = Optional.ofNullable(cbean.getIntroduced());
+		Optional<String> discontinued = Optional.ofNullable(cbean.getDiscontinued());
+		Optional<String> companyId = Optional.ofNullable(cbean.getCompany());
+		
+		initComputer();
+		
+		if(!setName(cbean.getName())) {
+			logger.error("Null name");
+		}
+		if(!setStart(cbean.getIntroduced())) {
+			logger.debug("Introduced Format error");
+		}
+		if(!setStart(cbean.getIntroduced())) {
+			logger.debug("Discontinued format error");
+		}
+		
+		int companyIdBean = Integer.parseInt(cbean.getCompany());
+		setCompany_id(companyIdBean);
+		
+		buildComputer();
+		addComputer();		
+		
+	}
+
+	public ArrayList<CompanyBean> listCompanyBean(){
+		
+		ArrayList<CompanyBean> list = new ArrayList<CompanyBean>();
+		
+		for(Company c:listCompany()) {
+			CompanyBean cBean = new CompanyBean();
+			cBean.setId(c.getId());
+			cBean.setName(c.getName());
+			
+			list.add(cBean);
+		}
+		return(list);		
+		
+	}
+
+	public ArrayList<ComputerBean> pageComputer(){
+		
+		ArrayList<ComputerBean> pageComputer = new ArrayList<ComputerBean>();
+		
+		Optional<LocalDate> introducedBuffer = Optional.empty();
+		Optional<LocalDate> discontinuedBuffer = Optional.empty();
+		
+		for(Computer c:((ArrayList<Computer>)(page.getElements()))) {
+			
+			ComputerBean cBean = new ComputerBean();
+			cBean.setName(c.getName());
+			cBean.setCompany(c.getManufacturer().getName());
+			
+			introducedBuffer = Optional.ofNullable(c.getStart());
+			if(introducedBuffer.isPresent()) {
+				cBean.setIntroduced(introducedBuffer.get().toString());
+			}
+			
+			discontinuedBuffer = Optional.ofNullable(c.getEnd());
+			if(discontinuedBuffer.isPresent()) {
+				cBean.setDiscontinued(discontinuedBuffer.get().toString());
+			}
+			
+			
+			pageComputer.add(cBean);
+			
+		}
+		
+		return(pageComputer);
+		
+	}
+	
+	
+
 	public void initComputer() {
 		this.id = 0;
 		this.name = null;
@@ -137,7 +245,7 @@ public class Controller {
 	}
 
 	public boolean setStart(String start) {
-		if (start.equals("n")) {
+		if (start.equals("n") || start == null) {
 			this.introduced = null;
 			return true;
 		
@@ -146,13 +254,14 @@ public class Controller {
 				this.introduced = LocalDate.parse(start, formatter);
 				return true;
 			} catch (Exception e) {
+				e.printStackTrace();
 				return false;
 			} 
 		}
 	}
 
 	public boolean setEnd(String end) {
-		if (end.equals("n")) {
+		if (end.equals("n") || end == null ) {
 			this.discontinued = null;
 			return true;
 		

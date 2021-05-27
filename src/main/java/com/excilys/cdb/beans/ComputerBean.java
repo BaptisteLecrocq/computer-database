@@ -6,6 +6,7 @@ public class ComputerBean {
 	private String introduced;
 	private String discontinued;
 	private String company;
+	
 	public String getName() {
 		return name;
 	}

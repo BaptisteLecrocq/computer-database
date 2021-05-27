@@ -54,35 +54,8 @@ public class Dashboard extends HttpServlet {
 		request.setAttribute("count", control.getPage().getCount());
 		
 		
-		ArrayList<ComputerBean> page = new ArrayList<ComputerBean>();
-		
-		Optional<LocalDate> introducedBuffer = Optional.empty();
-		Optional<LocalDate> discontinuedBuffer = Optional.empty();
-		
-		for(Computer c:((ArrayList<Computer>)(control.getPage().getElements()))) {
-			
-			ComputerBean cBean = new ComputerBean();
-			cBean.setName(c.getName());
-			//System.out.println(cBean.getName());
-			cBean.setCompany(c.getManufacturer().getName());
-			
-			introducedBuffer = Optional.ofNullable(c.getStart());
-			if(introducedBuffer.isPresent()) {
-				cBean.setIntroduced(introducedBuffer.get().toString());
-			}
-			
-			discontinuedBuffer = Optional.ofNullable(c.getEnd());
-			if(discontinuedBuffer.isPresent()) {
-				cBean.setDiscontinued(discontinuedBuffer.get().toString());
-			}
-			
-			
-			page.add(cBean);
-			
-		}		
-		request.setAttribute("page", page);
-		
-		
+		ArrayList<ComputerBean> page = control.pageComputer();				
+		request.setAttribute("page", page);		
 		
 		
 		this.getServletContext().getRequestDispatcher( "/WEB-INF/dashboard.jsp" ).forward( request, response );
