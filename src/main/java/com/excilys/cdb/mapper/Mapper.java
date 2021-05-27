@@ -39,11 +39,30 @@ public class Mapper {
 				
 			} catch (SQLException e) {
 				e.printStackTrace();
-			}			
-			System.out.println("Nb of values in computer database : "+i);
+			}
 		}
 		else {
-			//Exception
+			logger.error("No Computer Found");
+		}
+		
+		return(i);
+	}
+	
+	public int countCompany() {
+		Optional<ResultSet> results = connection.countCompany();
+		int i = 0;
+		
+		if(results.isPresent()) {
+			try {
+				results.get().next();
+				i = results.get().getInt(1);
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		else {
+			logger.error("No Company found");
 		}
 		
 		return(i);

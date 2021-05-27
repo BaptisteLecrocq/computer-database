@@ -26,6 +26,22 @@
                     <h1>Add Computer</h1>
                     <form action="add" method="POST">
                         <fieldset>
+                        	
+                        	<c:if test="${ errors.size() > 0 }" >
+                        		<div class="form-group alert alert-danger">
+							    <section id="error">
+							    	<ul>
+							    		<c:forEach var="error" items="${ errors }" >
+							    			<li>
+							    				<c:out value="${ error }" />
+							    			</li>
+							    		</c:forEach>
+							    	</ul>
+							    </section>
+							    </div>
+							</c:if>
+                        	
+                        
                             <div class="form-group">
                                 <label for="computerName">Computer name</label>
                                 <input type="text" class="form-control" id="computerName" name="computerName" placeholder="Computer name">
@@ -61,5 +77,6 @@
             </div>
         </div>
     </section>
+    
 </body>
 </html>

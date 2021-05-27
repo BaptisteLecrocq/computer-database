@@ -13,6 +13,7 @@ import com.excilys.cdb.beans.CompanyBean;
 import com.excilys.cdb.beans.ComputerBean;
 import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.mapper.Mapper;
+import com.excilys.cdb.mapper.MapperDTO;
 import com.excilys.cdb.model.*;
 import com.excilys.cdb.service.CRUD;
 
@@ -24,6 +25,8 @@ public class Controller {
 	private final PageCompanyFactory companyFactory = new PageCompanyFactory();
 	private Page page;
 	private Validation val;
+	private ValidateDTO valDTO;
+	private MapperDTO mapDTO;
 	
 	private Computer computer;
 	private int id;
@@ -39,6 +42,8 @@ public class Controller {
 	public Controller() {
 		sc = new Scanner(System.in);
 		val = new Validation();
+		valDTO = new ValidateDTO();
+		mapDTO = new MapperDTO();
 	}
 	
 	public Optional<String> initPage(Class type, int taille) {
@@ -145,30 +150,17 @@ public class Controller {
 	}
 	
 	
-	public void addComputerBean(ComputerBean cbean) {
+	public ArrayList<String> addComputerBean(ComputerBean cbean) {
 		
-		Optional<String> name = Optional.ofNullable(cbean.getName());
-		Optional<String> introduced = Optional.ofNullable(cbean.getIntroduced());
-		Optional<String> discontinued = Optional.ofNullable(cbean.getDiscontinued());
-		Optional<String> companyId = Optional.ofNullable(cbean.getCompany());
+		ArrayList<String> errors = valDTO.validateComputerBean(cbean);
 		
-		initComputer();
-		
-		if(!setName(cbean.getName())) {
-			logger.error("Null name");
-		}
-		if(!setStart(cbean.getIntroduced())) {
-			logger.debug("Introduced Format error");
-		}
-		if(!setStart(cbean.getIntroduced())) {
-			logger.debug("Discontinued format error");
+		if(errors.isEmpty()) {
+			initComputer();
+			setComputer(mapDTO.mapDTOToComputer(cbean));
+			addComputer();			
 		}
 		
-		int companyIdBean = Integer.parseInt(cbean.getCompany());
-		setCompany_id(companyIdBean);
-		
-		buildComputer();
-		addComputer();		
+		return(errors);
 		
 	}
 
@@ -308,6 +300,10 @@ public class Controller {
 		this.page = p;
 	}
 	
+	public void setComputer(Computer c) {
+		this.computer = c;
+	}
+
 	public void close() {
 		sc.close();
 	}

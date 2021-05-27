@@ -21,6 +21,10 @@ public class CRUD {
 		return(map.countComputer());
 	}
 	
+	public int countCompany() {
+		return(map.countCompany());
+	}
+	
 	public ArrayList<Computer> listComputer() throws NotFoundException{
 		return(map.listComputer());
 	}

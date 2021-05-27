@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 public class DAO {
 	
 	private final String countComputer = "SELECT COUNT(*) FROM computer";
+	private final String countCompany = "SELECT COUNT(*) FROM company";
 	private final String getLastComputerId = "SELECT max(id) FROM computer;";
 	
 	private final String getAllComputers = "SELECT id,name,introduced,discontinued,company_id FROM computer;";
@@ -63,6 +64,10 @@ public class DAO {
 	
 	public Optional<ResultSet> countComputer() {
 		return(simpleRequest(countComputer));
+	}
+	
+	public Optional<ResultSet> countCompany() {
+		return(simpleRequest(countCompany));
 	}
 
 	public Optional<ResultSet> listComputer(){

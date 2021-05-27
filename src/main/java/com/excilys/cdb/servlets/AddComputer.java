@@ -53,13 +53,12 @@ public class AddComputer extends HttpServlet {
 		Optional<String> companyIdBean = Optional.ofNullable(request.getParameter("companyId"));
 		if(companyIdBean.isPresent()) {
 			nbean.setCompany(companyIdBean.get());
-			System.out.println("CompanyId is " + companyIdBean.get());
 		} else {
 			nbean.setCompany("0");
-			System.out.println("CompanyId is 0");
 		}
 		
-		control.addComputerBean(nbean);
+		ArrayList<String> errors = control.addComputerBean(nbean);
+		request.setAttribute("errors", errors);
 		
 		this.getServletContext().getRequestDispatcher( "/WEB-INF/addComputer.jsp" ).forward( request, response );
 	}
