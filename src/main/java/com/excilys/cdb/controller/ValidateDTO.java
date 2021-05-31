@@ -77,10 +77,6 @@ public class ValidateDTO {
 			catch(Exception e){
 				return false;
 			}
-			System.out.println(introduced);
-			System.out.println(discontinued);
-			System.out.println(start);
-			System.out.println(end);
 			
 			if(introduced == null || start.equals("") || discontinued == null || end.equals("")) {
 				return true;

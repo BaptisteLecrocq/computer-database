@@ -163,6 +163,20 @@ public class Controller {
 		return(errors);
 		
 	}
+	
+	public ArrayList<String> editComputerBean(ComputerBean cbean) {
+		
+		ArrayList<String> errors = valDTO.validateComputerBean(cbean);
+		
+		if(errors.isEmpty()) {
+			initComputer();
+			setComputer(mapDTO.mapDTOToComputer(cbean));
+			updateComputer();	
+		}
+		
+		return(errors);
+		
+	}
 
 	public ArrayList<CompanyBean> listCompanyBean(){
 		
@@ -189,6 +203,8 @@ public class Controller {
 		for(Computer c:((ArrayList<Computer>)(page.getElements()))) {
 			
 			ComputerBean cBean = new ComputerBean();
+
+			cBean.setId(""+c.getId());
 			cBean.setName(c.getName());
 			cBean.setCompany(c.getManufacturer().getName());
 			

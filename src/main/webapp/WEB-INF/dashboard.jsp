@@ -88,7 +88,10 @@
 	                            <input type="checkbox" name="cb" class="cb" value="0">
 	                        </td>
 	                        <td>
-	                            <a href="editComputer.html" onclick="">
+	                        	<c:url value="/edit" var="lienEdit" >
+	                        		<c:param name="idComputer" value="${ computer.id }" />
+	                        	</c:url>
+	                            <a href="${ lienEdit }" onclick="">
 	                            	<c:out value="${ computer.name }" />
 	                            </a>
 	                        </td>

@@ -1,8 +1,9 @@
 package com.excilys.cdb.servlets;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.Optional;
+import java.util.ArrayList;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -13,28 +14,30 @@ import javax.servlet.http.HttpServletResponse;
 import com.excilys.cdb.beans.CompanyBean;
 import com.excilys.cdb.beans.ComputerBean;
 import com.excilys.cdb.controller.Controller;
-import com.excilys.cdb.model.Company;
+import com.excilys.cdb.model.Computer;
 
-@WebServlet(name = "AddComputer", urlPatterns = "/add")
-public class AddComputer extends HttpServlet {
+@WebServlet(name = "EditComputer", urlPatterns = "/edit")
+public class EditComputer extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
 	private Controller control = new Controller();
+	
 
 	public void doGet( HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
 		
 		ArrayList<CompanyBean> list = control.listCompanyBean();
 		request.setAttribute("companyList", list);
 		
+		request.setAttribute("idComputer", request.getParameter("idComputer"));
+		
 		request.setAttribute("validationFront", "true");
 	
-		this.getServletContext().getRequestDispatcher( "/WEB-INF/addComputer.jsp" ).forward( request, response );
+		this.getServletContext().getRequestDispatcher( "/WEB-INF/editComputer.jsp" ).forward( request, response );
 	}
-	
 	
 	public void doPost( HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
 		
-		boolean validationFront = false;
+		boolean validationFront = true;
 		
 		String buffer = request.getParameter("validationFront");
 		if(buffer == null) {
@@ -51,8 +54,13 @@ public class AddComputer extends HttpServlet {
 		if(validationFront) {
 		
 			ComputerBean nbean = new ComputerBean();
-
+			
+			System.out.println("Update computer Id : "+request.getParameter("id"));
+			
+			nbean.setId(request.getParameter("id"));
 			nbean.setName(request.getParameter("computerName"));
+			
+			
 			
 			Optional<String> introducedBean = Optional.ofNullable(request.getParameter("introduced"));
 			if(introducedBean.isPresent()) {
@@ -75,12 +83,14 @@ public class AddComputer extends HttpServlet {
 				nbean.setCompany("0");
 			}
 			
-			ArrayList<String> errors = control.addComputerBean(nbean);
+			ArrayList<String> errors = control.editComputerBean(nbean);
 			request.setAttribute("errors", errors);
 			
 		}
 		
-		this.getServletContext().getRequestDispatcher( "/WEB-INF/addComputer.jsp" ).forward( request, response );
+		this.getServletContext().getRequestDispatcher( "/WEB-INF/editComputer.jsp" ).forward( request, response );
 	}
+
+	
 	
 }

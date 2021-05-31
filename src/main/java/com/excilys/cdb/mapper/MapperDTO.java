@@ -27,6 +27,7 @@ public class MapperDTO {
 		
 		Computer computer = new Computer
 				.ComputerBuilder(cBean.getName())
+				.withId(Integer.parseInt(cBean.getId()))
 				.withStart(introduced)
 				.withEnd(discontinued)
 				.withManufacturer(Integer.parseInt(cBean.getCompany()))

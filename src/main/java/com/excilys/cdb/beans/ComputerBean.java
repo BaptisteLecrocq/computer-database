@@ -2,11 +2,19 @@ package com.excilys.cdb.beans;
 
 public class ComputerBean {
 	
+	private String id;
 	private String name;
 	private String introduced;
 	private String discontinued;
 	private String company;
 	
+	
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
 	public String getName() {
 		return name;
 	}

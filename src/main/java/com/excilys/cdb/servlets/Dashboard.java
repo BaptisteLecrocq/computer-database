@@ -55,7 +55,7 @@ public class Dashboard extends HttpServlet {
 		
 		
 		ArrayList<ComputerBean> page = control.pageComputer();				
-		request.setAttribute("page", page);		
+		request.setAttribute("page", page);
 		
 		
 		this.getServletContext().getRequestDispatcher( "/WEB-INF/dashboard.jsp" ).forward( request, response );

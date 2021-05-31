@@ -1,13 +1,7 @@
 package com.excilys.cdb.model;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.time.LocalDate;
-import java.time.LocalDate;
+
 
 public class Computer {
 	
@@ -19,42 +13,6 @@ public class Computer {
 	private LocalDate start;
 	private LocalDate end;
 	private Company manufacturer;
-	
-	private static ArrayList<Integer> computerIdList;
-	
-	//Initialize computerIdList
-	private static Computer initialize = new Computer();
-
-	
-	public Computer() {
-			
-		Connection con = null;
-		String url = "jdbc:mysql://127.0.0.1:3306/computer-database-db" ;
-
-		try {
-			con = DriverManager.getConnection(url,"admincdb","qwerty1234");
-			
-		
-			String query = "SELECT * FROM computer;";
-			
-			int id;
-			computerIdList = new ArrayList<Integer>();
-			
-			Statement stmt = con.createStatement();
-			ResultSet results = stmt.executeQuery(query);
-			
-			while(results.next()) {
-				
-				id = results.getInt("computer.id");			
-				computerIdList.add(id);		
-			}		
-			
-			con.close();
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
 	
 	private Computer(ComputerBuilder builder) {
 		

@@ -24,7 +24,8 @@ public class main {
 		Logger logger = LoggerFactory.getLogger(main.class);
 		logger.debug("Coucou");
 		  
-		  CLI test = new CLI();
+		CLI test = new CLI();
+		
 		
 
 	}
