@@ -9,7 +9,7 @@ public class PageComputer extends Page {
 	
 	private ArrayList<Computer> elements;
 	
-	public PageComputer(int start, int taille, int pageNumber) throws NotFoundException {
+	public PageComputer(int start, int taille, int pageNumber) {
 		
 
 		this.elements = CRUD.getInstance().pageComputerList(start, taille);
@@ -18,11 +18,11 @@ public class PageComputer extends Page {
 		this.pageNumber = pageNumber;
 		
 	}
-	public PageComputer(int start, int taille) throws NotFoundException {
+	public PageComputer(int start, int taille) {
 		this(start, taille, 0);		
 	}
 	
-	public PageComputer nextPage() throws NotFoundException {
+	public PageComputer nextPage() {
 		if (start + taille > count) {
 			return (new PageComputer(0, taille, 0));
 		
@@ -31,7 +31,7 @@ public class PageComputer extends Page {
 		}
 		
 	}	
-	public PageComputer previousPage() throws NotFoundException {
+	public PageComputer previousPage() {
 		if (start - taille < 0) {
 			return (new PageComputer(count - count % taille, taille, count / taille));
 		

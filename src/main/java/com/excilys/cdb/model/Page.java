@@ -11,8 +11,8 @@ public abstract class Page {
 	protected int pageNumber;
 	public static int count;	
 	
-	public abstract Page nextPage() throws NotFoundException;
-	public abstract Page previousPage() throws NotFoundException;
+	public abstract Page nextPage();
+	public abstract Page previousPage();
 	
 	
 	public int getTaille() {

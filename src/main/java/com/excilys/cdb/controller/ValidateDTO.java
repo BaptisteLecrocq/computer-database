@@ -26,46 +26,47 @@ public class ValidateDTO {
 		ArrayList<String> errors = new ArrayList<String>();
 		
 		if(validateName(cBean.getName())) { errors.add(ERR_NAME); }
-		if(!validateDateFormat(cBean.getIntroduced())) { errors.add(ERR_FORMAT_INTRODUCED);	}
-		if(!validateDateFormat(cBean.getDiscontinued())) { errors.add(ERR_FORMAT_DISCONTINUED);	}
+		if(validateDateFormat(cBean.getIntroduced())) { errors.add(ERR_FORMAT_INTRODUCED);	}
+		if(validateDateFormat(cBean.getDiscontinued())) { errors.add(ERR_FORMAT_DISCONTINUED);	}
 		else {
 			if(validateDiscontinuedButNoIntroduced(cBean.getIntroduced(),cBean.getDiscontinued())) { errors.add(ERR_DATE_ABSENT); }
-			if(!validateIntroducedBeforeDiscontinued(cBean.getIntroduced(),cBean.getDiscontinued())) { errors.add(ERR_DATE_ORDER); }
+			if(validateIntroducedBeforeDiscontinued(cBean.getIntroduced(),cBean.getDiscontinued())) { errors.add(ERR_DATE_ORDER); }
 		}
 		
 		
-		if(!validateCompanyIdFormat(cBean.getCompany())) { errors.add(ERR_FORMAT_COMPANY_ID); } 
+		if(validateCompanyIdFormat(cBean.getCompany())) { errors.add(ERR_FORMAT_COMPANY_ID); } 
 		else {
-			if(!validateCompanyExists(cBean.getCompany())) { errors.add(ERR_COMPANY); }
+			if(validateCompanyExists(cBean.getCompany())) { errors.add(ERR_COMPANY); }
 		}
 		
 		return(errors);
 	}
 	
-	public boolean validateName(String name) {
-		return(name == null || name.equals(""));
+	private boolean validateName(String name) {
+		return(name == null || name.length() == 0 );
 	}
 	
-	public boolean validateDateFormat(String date) {
-		if (date.equals("n") || date.equals("") || date == null) {
-			return true;		
+	private boolean validateDateFormat(String date) {
+		if (date.equals("n") || date.length() == 0 || date == null) {
+			return false;		
 		}
 		else {
 			try {
 				LocalDate.parse(date, formatter);
-				return true;
+				return false;
 			}
 			catch(Exception e) {
-				return false;
+				e.printStackTrace();
+				return true;
 			}
 		}		
 	}
 	
-	public boolean validateDiscontinuedButNoIntroduced(String start, String end) {
-		return(start==null && !(end != null));
+	private boolean validateDiscontinuedButNoIntroduced(String start, String end) {
+		return(start == null && end != null);
 	}
 	
-	public boolean validateIntroducedBeforeDiscontinued(String start, String end) {
+	private boolean validateIntroducedBeforeDiscontinued(String start, String end) {
 			
 			LocalDate introduced = null;
 			LocalDate discontinued = null;
@@ -73,33 +74,37 @@ public class ValidateDTO {
 			try {
 				introduced = LocalDate.parse(start, formatter);
 				discontinued = LocalDate.parse(end, formatter);
-			}
-			catch(Exception e){
-				return false;
+			
+			} catch(Exception e) {
+				return true;
 			}
 			
-			if(introduced == null || start.equals("") || discontinued == null || end.equals("")) {
-				return true;
+			if(introduced == null || start.length() == 0 || discontinued == null || end.length() == 0 ) {
+				return false;
+				
 			} else {
-				return((introduced.isBefore(discontinued)));
+				return((discontinued.isBefore(introduced)));
 			}
 			
 	}
 
-	public boolean validateCompanyIdFormat(String id) {
+	private boolean validateCompanyIdFormat(String id) {
 		try {
 			Integer.parseInt(id);
-			return true;
-		}
-		catch(Exception e) {
 			return false;
+			
+		} catch(Exception e) {
+			
+			e.printStackTrace();
+			return true;
 		}
 		
 	}
 	
-	public boolean validateCompanyExists(String id) {
+	private boolean validateCompanyExists(String id) {
+		
 		int companyId = Integer.parseInt(id);
 		int last = service.countCompany();
-		return(companyId >= 0 && companyId <= last);
+		return(companyId < 0 || companyId > last);
 	}
 }

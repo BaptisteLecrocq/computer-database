@@ -6,10 +6,11 @@ import com.excilys.cdb.mapper.Mapper;
 import com.excilys.cdb.model.*;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class CRUD {
 	
-	private Mapper map = Mapper.getInstance();
+	private DAO dao = DAO.getInstance();
 	
 	//Singleton pattern	
 	private static CRUD firstCrud = new CRUD();
@@ -18,41 +19,41 @@ public class CRUD {
 	}
 	
 	public int countComputer() {
-		return(map.countComputer());
+		return(dao.countComputer());
 	}
 	
 	public int countCompany() {
-		return(map.countCompany());
+		return(dao.countCompany());
 	}
 	
 	public ArrayList<Computer> listComputer() throws NotFoundException{
-		return(map.listComputer());
+		return(dao.listComputer());
 	}
 	
 	public ArrayList<Company> listCompany() throws NotFoundException{
-		return(map.listCompany());
+		return(dao.listCompany());
 	}
 	
 	public boolean addComputer(Computer computer) {
-		return(map.addComputer(computer));	
+		return(dao.addComputer(computer));	
 	}
 	
 	public boolean updateComputer(Computer replace) {		
-		return(map.updateComputer(replace));	
+		return(dao.updateComputer(replace));	
 	}
 	
 	public boolean deleteComputer(int id){
-		return(map.deleteComputer(id));
+		return(dao.deleteComputer(id));
 	}	
 	
-	public Computer getComputerById(int id) throws NotFoundException {		
-		return(map.getOneComputer(id));		
+	public Optional<Computer> getComputerById(int id) {		
+		return(dao.findComputer(id));		
 	}
 
-	public ArrayList<Computer> pageComputerList(int start, int taille) throws NotFoundException{
-		return(map.getPageComputer(start,taille));
+	public ArrayList<Computer> pageComputerList(int start, int taille) {
+		return(dao.getPageComputer(start,taille));
 	}
-	public ArrayList<Company> pageCompanyList(int start, int taille) throws NotFoundException{
-		return(map.getPageCompany(start,taille));
+	public ArrayList<Company> pageCompanyList(int start, int taille) {
+		return(dao.getPageCompany(start,taille));
 	}	
 }

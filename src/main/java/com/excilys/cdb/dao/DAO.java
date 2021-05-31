@@ -9,10 +9,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.excilys.cdb.beans.ComputerBeanDb;
+import com.excilys.cdb.exception.NotFoundException;
+import com.excilys.cdb.mapper.Mapper;
+import com.excilys.cdb.mapper.MapperDTOdb;
+import com.excilys.cdb.model.Company;
+import com.excilys.cdb.model.Computer;
 
 
 public class DAO {
@@ -32,6 +40,8 @@ public class DAO {
 	
 	private static Connection con;
 	private static Database db = Database.getInstance();
+	private Mapper map = Mapper.getInstance();
+	private MapperDTOdb mapDb = MapperDTOdb.getInstance();
 	
 	private static Logger logger = LoggerFactory.getLogger(DAO.class);
 	
@@ -46,52 +56,79 @@ public class DAO {
 	
 	public Optional<ResultSet> simpleRequest(String query) {
 		Optional<ResultSet> results = Optional.empty();	
-		Statement stmt;
 		open();
 		
-		try {
+		try (Statement stmt = con.createStatement();){
 			
-			stmt = con.createStatement();
 			results = Optional.ofNullable(stmt.executeQuery(query));
 			
 		} catch (SQLException e) {
 			logger.error(e.toString());
 		}
 		
+		stop();
 		return(results);		
 		
 	}
 	
-	public Optional<ResultSet> countComputer() {
-		return(simpleRequest(countComputer));
-	}
-	
-	public Optional<ResultSet> countCompany() {
-		return(simpleRequest(countCompany));
-	}
-
-	public Optional<ResultSet> listComputer(){
-		return(simpleRequest(getAllComputers));
-	}
-	
-	public Optional<ResultSet> listCompany(){
-		return(simpleRequest(getAllCompanies));
-	}
-
-	public Optional<ResultSet> getLastComputerId() {
-		return(simpleRequest(getLastComputerId));
-	}
-	
-	
-	public boolean addComputer(String name, Optional<LocalDate> start, Optional<LocalDate> end, int company_id){
+	public int countComputer() {
 		
-		open();
+		Optional<ResultSet> results = simpleRequest(countComputer);		
+		return(map.countComputer(results));
+	}
+	
+	public int countCompany() {
+		
+		Optional<ResultSet> results = simpleRequest(countCompany);
+		return(map.countCompany(results));
+	}
+
+	public ArrayList<Computer> listComputer(){
+		
+		Optional<ResultSet> results = simpleRequest(getAllComputers);
+		ArrayList<Computer> listComputer = new ArrayList<Computer>();
 		
 		try {
+			 listComputer = map.mapComputerList(results);
+		} catch (NotFoundException e) {
+			logger.info(e.toString());
+		}
+		return(listComputer);
+	}
+	
+	public ArrayList<Company> listCompany(){
+		
+		Optional<ResultSet> results = simpleRequest(getAllCompanies);
+		ArrayList<Company> listCompany = new ArrayList<Company>();
+		
+		try {
+			listCompany = map.mapCompanyList(results);
+		} catch (NotFoundException e) {
+			logger.info(e.toString());
+		}
+		return(listCompany);
+	}
+
+	public int getLastComputerId() {
+		
+		Optional<ResultSet> results = simpleRequest(getLastComputerId);
+		return(map.countComputer(results));
+	}
+	
+	
+	public boolean addComputer(Computer computer){
+		
+		
+		ComputerBeanDb cBean = mapDb.mapModelToDTOdb(computer);
+		open();
+		
+		try ( PreparedStatement ps = con.prepareStatement(addComputer) ){			
 			
-			PreparedStatement ps = con.prepareStatement(addComputer);
-			ps.setString(1, name);
-			ps.setInt(4, company_id);
+			ps.setString(1, cBean.getName());
+			ps.setInt(4, cBean.getCompanyId());
+			
+			Optional<String> start = Optional.ofNullable(cBean.getIntroduced());
+			Optional<String> end = Optional.ofNullable(cBean.getDiscontinued());
 			
 			if(!start.isPresent()) {
 				ps.setNull(2, 0);
@@ -119,37 +156,43 @@ public class DAO {
 		}
 	}
 	
-	public Optional<ResultSet> findComputer(int id){		
+	public Optional<Computer> findComputer(int id){		
 
 		Optional<ResultSet> results = Optional.empty();	
+		Optional<Computer> computer = Optional.empty();
 		open();
 		
-		try {
-			PreparedStatement ps = con.prepareStatement(getOneComputer);
+		try ( PreparedStatement ps = con.prepareStatement(getOneComputer) ) {
+
 			ps.setInt(1, id);
 			results = Optional.ofNullable(ps.executeQuery());
+			computer = map.getOneComputer(results);
 			
 		}catch(SQLException e) {
-			
 			logger.error(e.toString());
 			
+		}catch(NotFoundException e) {
+			logger.info(e.toString());
 		}
 		
-		return(results);
+		stop();
+		return(computer);
 		
 	}
 	
-	public boolean updateComputer(int id, String name, Optional<LocalDate> start, Optional<LocalDate> end, int company_id){
+	public boolean updateComputer(Computer computer){
 
+		ComputerBeanDb cBean = mapDb.mapModelToDTOdb(computer);
 		open();
 		
-		try {
+		try ( PreparedStatement ps = con.prepareStatement(updateComputer) ) {
 			
-			PreparedStatement ps = con.prepareStatement(updateComputer);
-			ps.setString(1,name);
-			ps.setInt(4, company_id);
-			ps.setInt(5, id);
+			ps.setString(1,cBean.getName());
+			ps.setInt(4, cBean.getCompanyId());
+			ps.setInt(5, cBean.getId());
 			
+			Optional<String> start = Optional.ofNullable(cBean.getIntroduced());
+			Optional<String> end = Optional.ofNullable(cBean.getDiscontinued());
 			
 			if(!start.isPresent()) {
 				ps.setNull(2, 0);
@@ -181,9 +224,8 @@ public class DAO {
 
 		open();
 		
-		try {
+		try ( PreparedStatement ps = con.prepareStatement(deleteComputer) ) {
 					
-			PreparedStatement ps = con.prepareStatement(deleteComputer);
 			ps.setInt(1,id);
 			int results = ps.executeUpdate();
 			
@@ -197,40 +239,52 @@ public class DAO {
 		}
 	}
 	
-	public Optional<ResultSet> getPageComputer (int start, int taille){
+	public ArrayList<Computer> getPageComputer (int start, int taille){
 		
 		Optional<ResultSet> results = Optional.empty();
+		ArrayList<Computer> pageComputer = new ArrayList<Computer>();
 		open();
 		
-		try {
-			PreparedStatement ps = con.prepareStatement(getComputerPage);
+		try ( PreparedStatement ps = con.prepareStatement(getComputerPage) ) {
+		
 			ps.setInt(1, taille);
 			ps.setInt(2, start);
 			results = Optional.ofNullable(ps.executeQuery());
+			pageComputer = map.mapComputerList(results);
 					
 		} catch (SQLException e) {
 			logger.error(e.toString());
+			
+		} catch (NotFoundException e) {
+			logger.info(e.toString());
 		}
 		
-		return(results);
+		stop();
+		return(pageComputer);
 	}
 	
-	public Optional<ResultSet> getPageCompany (int start, int taille){
+	public ArrayList<Company> getPageCompany (int start, int taille){
 		
 		Optional<ResultSet> results = Optional.empty();
+		ArrayList<Company> pageCompany = new ArrayList<Company>();		
 		open();
 		
-		try {
-			PreparedStatement ps = con.prepareStatement(getCompanyPage);
+		try ( PreparedStatement ps = con.prepareStatement(getCompanyPage) ) {
+			
 			ps.setInt(1, taille);
 			ps.setInt(2, start);
 			results = Optional.ofNullable(ps.executeQuery());
+			pageCompany = map.mapCompanyList(results);
 					
 		} catch (SQLException e) {
 			logger.error(e.toString());
+			
+		} catch (NotFoundException e) {
+			logger.info(e.toString());
 		}
 		
-		return(results);
+		stop();
+		return(pageCompany);
 	}
 
 	public static Connection getCon() {
@@ -241,10 +295,11 @@ public class DAO {
 		return db;
 	}
 	
+	
 	public void open() {
 
 		try {
-
+			
 			Class.forName(Database.getDriver());
 			con = DriverManager.getConnection(Database.getUrl(),Database.getUsername(),Database.getPassword());
 			
@@ -256,7 +311,6 @@ public class DAO {
 		}
 	}
 	
-
 	public void stop() {
 
 		try {

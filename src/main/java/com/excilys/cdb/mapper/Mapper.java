@@ -16,20 +16,18 @@ import com.excilys.cdb.model.*;
 
 public class Mapper {
 	
-	DAO connection = DAO.getInstance();
-	
 	private static Logger logger = LoggerFactory.getLogger(Mapper.class);
 	
-	//Singleton pattern	
 	private static Mapper firstMapper = new Mapper();
 	public static Mapper getInstance() {
-		return(firstMapper);
+		return (firstMapper);
 	}
 	
-	private Mapper(){}	
+	private Mapper() {};
 
-	public int countComputer() {
-		Optional<ResultSet> results = connection.countComputer();
+
+ 	public int countComputer( Optional<ResultSet> results ) {
+		
 		int i = 0;
 		
 		if(results.isPresent()) {
@@ -38,7 +36,7 @@ public class Mapper {
 				i = results.get().getInt(1);
 				
 			} catch (SQLException e) {
-				e.printStackTrace();
+				logger.error(e.toString());
 			}
 		}
 		else {
@@ -48,8 +46,8 @@ public class Mapper {
 		return(i);
 	}
 	
-	public int countCompany() {
-		Optional<ResultSet> results = connection.countCompany();
+	public int countCompany( Optional<ResultSet> results ) {
+
 		int i = 0;
 		
 		if(results.isPresent()) {
@@ -58,7 +56,7 @@ public class Mapper {
 				i = results.get().getInt(1);
 				
 			} catch (SQLException e) {
-				e.printStackTrace();
+				logger.error(e.toString());
 			}
 		}
 		else {
@@ -68,47 +66,20 @@ public class Mapper {
 		return(i);
 	}
 	
-	public ArrayList<Computer> listComputer () throws NotFoundException{
-		return(map(Computer.class,connection.listComputer()));
-	}
-	
-	public ArrayList<Company> listCompany() throws NotFoundException{
-		return(map(Company.class,connection.listCompany()));
-	}
-	
-	public boolean addComputer(Computer computer) {
-		return(connection.addComputer(computer.getName(), Optional.ofNullable(computer.getStart()), Optional.ofNullable(computer.getEnd()), computer.getCompanyId()));
-	}
-	
-	public Computer getOneComputer(int id) throws NotFoundException {
+	public Optional<Computer> getOneComputer( Optional<ResultSet> results ) throws NotFoundException {
 		
-		Computer computer;
-		ArrayList test =  map(Computer.class,connection.findComputer(id));
-		
-		if(test.size()>0) {
-			computer = (Computer)test.get(0);
-		}
-		else {
-			computer = null;
-		}
+		ArrayList test =  map(Computer.class,results);
+		Optional<Computer> computer = Optional.ofNullable((Computer)test.get(0));
 		
 		return(computer);
 	}
 	
-	public boolean updateComputer(Computer computer) {
-		return(connection.updateComputer(computer.getId(), computer.getName(), Optional.ofNullable(computer.getStart()), Optional.ofNullable(computer.getEnd()), computer.getCompanyId()));
+	public ArrayList<Computer> mapComputerList( Optional<ResultSet> results ) throws NotFoundException {
+		return(map(Computer.class,results));
 	}
 	
-	public boolean deleteComputer(int id) {
-		return(connection.deleteComputer(id));
-	}
-	
-	public ArrayList<Computer> getPageComputer(int start, int taille) throws NotFoundException{
-		return(map(Computer.class,connection.getPageComputer(start,taille)));
-	}
-	
-	public ArrayList<Company> getPageCompany(int start, int taille) throws NotFoundException{
-		return(map(Company.class,connection.getPageCompany(start,taille)));
+	public ArrayList<Company> mapCompanyList( Optional<ResultSet> results ) throws NotFoundException {
+		return(map(Company.class,results));
 	}
 	
 	public ArrayList map(Class type, Optional<ResultSet> optional) throws NotFoundException{		
@@ -145,8 +116,6 @@ public class Mapper {
 					}				
 				}
 			}
-			
-			connection.stop();
 			
 		} catch (SQLException e) {
 			logger.error(e.toString());

@@ -10,6 +10,13 @@ public class MapperDTO {
 	
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	
+	private static MapperDTO firstMapper = new MapperDTO();
+	public static MapperDTO getInstance() {
+		return (firstMapper);
+	}
+	
+	private MapperDTO() {};
+	
 	public Computer mapDTOToComputer(ComputerBean cBean) {
 		
 		String start = cBean.getIntroduced();

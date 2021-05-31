@@ -24,9 +24,9 @@ public class Controller {
 	private final PageComputerFactory computerFactory = new PageComputerFactory();
 	private final PageCompanyFactory companyFactory = new PageCompanyFactory();
 	private Page page;
-	private Validation val;
-	private ValidateDTO valDTO;
-	private MapperDTO mapDTO;
+	private Validation val = new Validation();
+	private ValidateDTO valDTO = new ValidateDTO();
+	private MapperDTO mapDTO = MapperDTO.getInstance();
 	
 	private Computer computer;
 	private int id;
@@ -41,34 +41,25 @@ public class Controller {
 	
 	public Controller() {
 		sc = new Scanner(System.in);
-		val = new Validation();
-		valDTO = new ValidateDTO();
-		mapDTO = new MapperDTO();
 	}
 	
-	public Optional<String> initPage(Class type, int taille) {
+	public Optional<String> initPage(Class<?> type, int taille) {
 		
 		return (this.initPage(type, taille, 0));		
 
 	}
 	
-	public Optional<String> initPage(Class type, int taille, int numberPage) {
+	public Optional<String> initPage(Class<?> type, int taille, int numberPage) {
 		
 		Page.count = service.countComputer();
 		Optional<String> message = Optional.empty();
 		
 		if (val.tailleValide(taille)) {
-			try {
+			if (type == Computer.class) {				
+				page = computerFactory.getPage(numberPage*taille, taille, numberPage);
 				
-				if (type == Computer.class) {				
-					page = computerFactory.getPage(numberPage*taille, taille, numberPage);
-					
-				} else if (type == Company.class) {
-					page = companyFactory.getPage(numberPage*taille, taille, numberPage);
-				}
-				
-			} catch (NotFoundException e) {
-				message = Optional.of(e.toString());
+			} else if (type == Company.class) {
+				page = companyFactory.getPage(numberPage*taille, taille, numberPage);
 			}
 			
 		} else {
@@ -80,31 +71,18 @@ public class Controller {
 	}
 	
 	public String nextPage() {
-		String message;
 		
-		try {
-			page = page.nextPage();
-			message = "Page suivante :";
+		page = page.nextPage();
 			
-		} catch (NotFoundException e) {
-			message = e.toString();
-		}
-		return (message);
+		return ("Page suivante :");
 	}
 	
 	public String previousPage() {
-		String message;
 		
-		try {
-			page = page.previousPage();
-			message = "Page précédente :";
-			
-		} catch (NotFoundException e) {
-			message = e.toString();
-		}
-		return (message);
+		page = page.previousPage();
+
+		return ("Page précédente :");
 	}
-	
 	
 	
 	public ArrayList<Computer> listComputer(){
@@ -130,11 +108,18 @@ public class Controller {
 	}
 	
 	public String getComputerById(int id) {
-		try {
-			return (service.getComputerById(id).toString());
-		} catch (NotFoundException e) {
-			return (e.toString());
+		
+		String message = null;
+		Optional<Computer> computer = service.getComputerById(id);
+		
+		if(computer.isPresent()) {
+			message = computer.get().toString();
 		}
+		else {
+			message = "Computer Not Found";
+		}
+		
+		return(message);
 	}
 	
 	public boolean addComputer() {

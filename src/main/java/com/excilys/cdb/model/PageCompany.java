@@ -9,20 +9,20 @@ public class PageCompany extends Page {
 	
 	private ArrayList<Company> elements;
 	
-	public PageCompany(int start, int taille, int pageNumber) throws NotFoundException {
+	public PageCompany(int start, int taille, int pageNumber) {
 		
 		this.elements = CRUD.getInstance().pageCompanyList(start, taille);
 		this.taille = taille;
 		this.start = start;	
 		this.pageNumber = pageNumber;
 	}
-	public PageCompany(int start, int taille) throws NotFoundException {
+	public PageCompany(int start, int taille) {
 		this(start, taille, 0);
 	}
 	
 	
 	
-	public PageCompany nextPage() throws NotFoundException {
+	public PageCompany nextPage() {
 		if (start + taille > count) {
 			return (new PageCompany(0, taille, 0));
 		
@@ -31,7 +31,7 @@ public class PageCompany extends Page {
 		}
 		
 	}	
-	public PageCompany previousPage() throws NotFoundException {
+	public PageCompany previousPage() {
 		if (start - taille < 0) {
 			return (new PageCompany(count % taille, taille, count / taille));
 		
