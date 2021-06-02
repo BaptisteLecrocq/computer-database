@@ -1,8 +1,9 @@
 package com.excilys.cdb.ui;
 
-import java.util.Optional;
-import java.util.Scanner; 
+import java.util.Optional; 
+import java.util.Scanner;
 
+import com.excilys.cdb.beans.RequestParameterBean;
 import com.excilys.cdb.controller.*;
 import com.excilys.cdb.model.Company;
 import com.excilys.cdb.model.Computer;
@@ -38,7 +39,7 @@ public class CLI {
 				System.out.println("Enter the Page length :" + "\n");		
 				int taille1 = sc.nextInt();
 				
-				Optional<String> testPage1 = control.initPage(Computer.class, taille1);
+				Optional<String> testPage1 = control.initPage(Computer.class, taille1, new RequestParameterBean());
 				if (!testPage1.isPresent()) {
 					
 					gestionPage();
@@ -55,7 +56,7 @@ public class CLI {
 				System.out.println("Enter the Page length :" + "\n");
 				int taille2 = sc.nextInt();	
 				
-				Optional<String> testPage2 = control.initPage(Company.class, taille2);
+				Optional<String> testPage2 = control.initPage(Company.class, taille2, new RequestParameterBean());
 				if (!testPage2.isPresent()) {
 					
 					gestionPage();

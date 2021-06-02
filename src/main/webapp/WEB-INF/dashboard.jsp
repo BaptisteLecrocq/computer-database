@@ -32,6 +32,7 @@
                     <form id="searchForm" action="#" method="GET" class="form-inline">
                         <input type="search" id="searchbox" name="search" class="form-control" placeholder="Search name" />
                         <input type="submit" id="searchsubmit" value="Filter by name" class="btn btn-primary" />
+                        <input type="submit" id="refresh" name="refresh" value="Refresh" class="btn btn-info" />
                     </form>
                 </div>
                 <div class="pull-right">
@@ -151,7 +152,7 @@
               		<c:set var = "beginPage" value = "${ 4 - pageNumber }" />
               		<c:set var = "endPage" value = "${ 8 - pageNumber }" />
               	</c:when>
-              	<c:when test="${ ( pageNumber + 2 ) > count/12 }">
+              	<c:when test="${ (( pageNumber + 2 ) > count/12 ) && ( pageNumber < count/12 ) }">
               		<c:set var = "beginPage" value = "${ count/12 - pageNumber }" />
               		<c:set var = "endPage" value = "${ count/12 - pageNumber + 4}" />
               	</c:when>
@@ -161,10 +162,22 @@
               	</c:otherwise>
               </c:choose>
               
+              
               <c:forEach var="i" begin="${beginPage}" end="${endPage}" step="1">
+              
+              	<c:choose>
+              		<c:when test="${ (pageNumber + i - 4) > count/12}" >
+              			<fmt:parseNumber var="correctPage" integerOnly="true" type="number" value="${ count/12 }" />
+              		</c:when>
+              		<c:otherwise>
+              			<c:set var="correctPage" value="${ pageNumber + i - 4 }" />
+              		</c:otherwise>            		
+              	</c:choose>
+              	
+              	
               	<li>
               		<c:url value="/app" var="lienDashboard">
-              			<c:param name="pageNumber" value="${ pageNumber + i -4}" />
+              			<c:param name="pageNumber" value="${ correctPage }" />
               			<c:param name="choice" value="${ choice }" />
 		                <c:param name="order" value="${ order }" />	
               		</c:url>

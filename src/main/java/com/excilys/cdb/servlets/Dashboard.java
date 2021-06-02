@@ -97,6 +97,15 @@ public class Dashboard extends HttpServlet {
 			choice = Integer.parseInt(read);
 		}
 		
+		String refresh = request.getParameter("refresh");
+		if(refresh != null) {
+			System.out.println(refresh);
+			session.invalidate();
+			//session.setAttribute("previousSearch","");
+		}
+		else {
+			session.setAttribute("previousSearch", searchTerm);
+		}
 		
 		RequestParameterBean parameters = new RequestParameterBean();
 		parameters.setSearchTerm(searchTerm);
@@ -112,7 +121,7 @@ public class Dashboard extends HttpServlet {
 		request.setAttribute("choice", choice);
 		request.setAttribute("count", count);					
 		request.setAttribute("page", page);
-		session.setAttribute("previousSearch", searchTerm);
+		
 		
 		
 		this.getServletContext().getRequestDispatcher( "/WEB-INF/dashboard.jsp" ).forward( request, response );

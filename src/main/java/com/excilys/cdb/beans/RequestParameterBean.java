@@ -5,6 +5,8 @@ public class RequestParameterBean {
 	private String searchTerm;
 	private int order;
 	private int choice;
+	
+	
 	public String getSearchTerm() {
 		return searchTerm;
 	}
