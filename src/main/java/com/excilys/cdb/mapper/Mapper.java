@@ -105,7 +105,7 @@ public class Mapper {
 								.withId(results.getInt("computer.id"))
 								.withStart(results.getObject("computer.introduced",LocalDate.class))
 								.withEnd(results.getObject("computer.discontinued",LocalDate.class))
-								.withManufacturer(results.getInt("computer.company_id"))
+								.withManufacturer(results.getInt("computer.company_id"),results.getString("company.name"))
 								.build();
 						
 						list.add(buffer);

@@ -9,11 +9,13 @@ public abstract class Page {
 	protected int taille;
 	protected int start;
 	protected int pageNumber;
-	public static int count;	
+	
+	public static int count;
 	
 	public abstract Page nextPage();
 	public abstract Page previousPage();
-	
+	public abstract void setElements(ArrayList<?> pageComputerList);
+	public abstract ArrayList<?> getElements();
 	
 	public int getTaille() {
 		return taille;
@@ -35,13 +37,11 @@ public abstract class Page {
 		return count;
 	}
 	
-	public ArrayList<?> getElements(){
-		return getElements();
-	}
-	
 	public int getPageNumber() {
 		return pageNumber;
 	}
+	
+	
 	
 	
 }

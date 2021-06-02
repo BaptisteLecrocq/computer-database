@@ -2,6 +2,7 @@ package com.excilys.cdb.dao;
 
 import java.time.LocalDate; 
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 import com.excilys.cdb.beans.ComputerBeanDb;
 import com.excilys.cdb.exception.FormatException;
@@ -64,17 +65,26 @@ public class ValidationDAO {
 	
 	private boolean validateIntroducedBeforeDiscontinued(String start, String end) {
 			
-			LocalDate introduced = null;
-			LocalDate discontinued = null;
+			Optional<String> startBuffer = Optional.ofNullable(start);
+			Optional<String> endBuffer = Optional.ofNullable(end);
 		
-			try {
+			LocalDate introduced;
+			LocalDate discontinued;
+			
+			if(startBuffer.isPresent()) {
 				introduced = LocalDate.parse(start, formatter);
+			
+			} else {
+				introduced = null;
+			}
+			
+			if(endBuffer.isPresent()) {
 				discontinued = LocalDate.parse(end, formatter);
+			
+			} else {
+				discontinued = null;
 			}
-			catch(Exception e){
-				e.printStackTrace();
-				return true;
-			}
+			
 			
 			if(introduced == null || start.length() == 0 || discontinued == null || end.length() == 0 ) {
 				return false;
@@ -87,7 +97,8 @@ public class ValidationDAO {
 	
 	private boolean validateCompanyExists(int id) {
 
-		int last = service.countCompany();
+		//int last = service.countCompany();
+		int last = 43;
 		return(id < 0 || id > last);
 	}
 

@@ -204,7 +204,7 @@ public class CLI {
 				
 			//Waits for company id
 			case 5:
-				control.setCompany_id(sc.nextInt());
+				control.setCompanyId(sc.nextInt());
 				break;
 			default:
 			}

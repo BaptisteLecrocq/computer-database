@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import org.junit.AfterClass;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.excilys.main;
 import com.excilys.cdb.dao.DAO;
 import com.excilys.cdb.dao.Database;
+import com.excilys.cdb.model.Computer;
 
 public class DAOTest {
 	
@@ -29,45 +31,31 @@ public class DAOTest {
     
     @BeforeClass
     public static void testConnection() {
-    	daotest.open();
     }
     
     @AfterClass
     public static void close() {
-    	daotest.stop();
-    }
-    
-    @Test
-    public void connectionToH2Database() {
-    	Optional<ResultSet> results = daotest.listComputer();
-    	assertTrue(results.isPresent());
+    	daotest.close();
     }
     
     @Test
     public void requestAllComputerNotNull() {
     	
-    	ResultSet results = daotest.listComputer().get();
-    	try {
-			assertTrue(results.next());
-			
-		} catch (SQLException e) {
-			logger.debug(e.toString());
-			fail();
-		}
+    	ArrayList<Computer> results = daotest.listComputer();
+    	assertTrue(results.size()>0);
     }
     
     @Test
     public void findComputerNotinH2ButInDB() {
     	String computerDbName = "testupdatearch";
-    	ResultSet results = daotest.findComputer(592).get();
-    	try {
-    		results.next();
-			assertFalse(computerDbName.equals(results.getString("name")));
-			
-		} catch (SQLException e) {
-			logger.debug(e.toString());
-			fail();
-		}
+    	Optional<Computer> results = daotest.findComputer(592);
+    	
+    	if(results.isPresent()) {
+    		assertFalse(computerDbName.equals(results.get().getName()));
+    	}
+    	else {
+    		fail();
+    	}
     }
     
     @Test
@@ -75,26 +63,22 @@ public class DAOTest {
     	
     	String testName = "testh2";
     	
-    	daotest.addComputer(testName, Optional.empty(), Optional.empty(), 5);
+    	Computer computer = new Computer 
+    						.ComputerBuilder(testName)
+    						.withManufacturer(5,null)
+    						.build();
     	
-    	ResultSet results = daotest.getLastComputerId().get();
+    	daotest.addComputer(computer);
     	
-    	int id = 0;
-    	try {
-    		results.next();
-			id = results.getInt(1);
-		} catch (SQLException e) {
-			logger.debug(e.toString());
-		}
+    	int id = daotest.getLastComputerId();    	
+    	Optional<Computer> computerAdded = daotest.findComputer(id);
     	
-    	ResultSet computerAdded = daotest.findComputer(id).get();
-    	try {
-			computerAdded.next();
-			assertTrue(testName.equals(computerAdded.getString("name")));
-		} catch (SQLException e) {
-			logger.debug(e.toString());
-			fail();
-		}
+    	if(computerAdded.isPresent()) {
+    		assertTrue(testName.equals(computerAdded.get().getName()));
+    	}
+    	else {
+    		fail();
+    	}
     	
     }
     
@@ -103,29 +87,30 @@ public class DAOTest {
     	
     	String testName = "testh2update";
     	
-    	daotest.addComputer("hasToUpdate", Optional.empty(), Optional.empty(), 5);
+    	Computer computer = new Computer
+    						.ComputerBuilder("HasToUpdate")
+    						.withManufacturer(5,null)
+    						.build();
     	
-    	ResultSet results = daotest.getLastComputerId().get();
+    	daotest.addComputer(computer);    	
+    	int id = daotest.getLastComputerId();
     	
-    	int id = 0;
-    	try {
-    		results.next();
-			id = results.getInt(1);
-		} catch (SQLException e) {
-			logger.debug(e.toString());
-		}
+    	Computer update = new Computer
+    						.ComputerBuilder(testName)
+    						.withId(id)
+    						.withManufacturer(5,null)
+    						.build();
     	
-    	daotest.updateComputer(id, testName, Optional.empty(), Optional.empty(), 5);
+    	daotest.updateComputer(update);
     	
-    	ResultSet computerUpdated = daotest.findComputer(id).get();
-    	try {
-			computerUpdated.next();
-			assertTrue(testName.equals(computerUpdated.getString("name")));
-		} catch (SQLException e) {
-			logger.debug(e.toString());
-			fail();
-		}
+    	Optional<Computer> computerUpdated = daotest.findComputer(id);
     	
+    	if(computerUpdated.isPresent()) {
+    		assertTrue(testName.equals(computerUpdated.get().getName()));
+    	}
+    	else {
+    		fail();
+    	}    	
     }
     
     @Test
@@ -133,27 +118,18 @@ public class DAOTest {
     	
     	String testName = "testh2delete";
     	
-    	daotest.addComputer(testName, Optional.empty(), Optional.empty(), 5);
+    	Computer computer = new Computer
+    						.ComputerBuilder(testName)
+    						.withManufacturer(5,null)
+    						.build();
     	
-    	ResultSet results = daotest.getLastComputerId().get();
-    	
-    	int id = 0;
-    	try {
-    		results.next();
-			id = results.getInt(1);
-		} catch (SQLException e) {
-			logger.debug(e.toString());
-		}
+    	daotest.addComputer(computer);    	
+    	int id = daotest.getLastComputerId();
     	
     	daotest.deleteComputer(id);
     	
-    	ResultSet computerDeleted = daotest.findComputer(id).get();
-    	try {
-			assertFalse(computerDeleted.next());
-		} catch (SQLException e) {
-			logger.debug(e.toString());
-			fail();
-		}
+    	Optional<Computer> computerDeleted = daotest.findComputer(id);
+    	assertFalse(computerDeleted.isPresent());
     	
     }
 

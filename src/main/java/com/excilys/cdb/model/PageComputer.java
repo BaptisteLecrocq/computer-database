@@ -11,8 +11,6 @@ public class PageComputer extends Page {
 	
 	public PageComputer(int start, int taille, int pageNumber) {
 		
-
-		this.elements = CRUD.getInstance().pageComputerList(start, taille);
 		this.taille = taille;
 		this.start = start;
 		this.pageNumber = pageNumber;
@@ -45,8 +43,8 @@ public class PageComputer extends Page {
 		return elements;
 	}
 
-	public void setElements(ArrayList<Computer> elements) {
-		this.elements = elements;
+	public void setElements(ArrayList<?> elements) {
+		this.elements = (ArrayList<Computer>) elements;
 	}
 	
 	public String toString() {

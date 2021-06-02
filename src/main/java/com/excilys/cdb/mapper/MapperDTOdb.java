@@ -1,5 +1,8 @@
 package com.excilys.cdb.mapper;
 
+import java.time.LocalDate;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +25,29 @@ public class MapperDTOdb {
 	
 	public ComputerBeanDb mapModelToDTOdb( Computer computer ) {
 		
-		ComputerBeanDb cBean = new ComputerBeanDb();
+		ComputerBeanDb cBean = new ComputerBeanDb();		
+		
+		cBean.setId(computer.getId());
+		cBean.setName(computer.getName());
+		
+		Optional<LocalDate> introduced = Optional.ofNullable(computer.getStart());
+		Optional<LocalDate> discontinued = Optional.ofNullable(computer.getEnd());
+		
+		if(introduced.isPresent()) {
+			cBean.setIntroduced(introduced.toString());
+		
+		} else {
+			cBean.setIntroduced(null);
+		}
+		
+		if(discontinued.isPresent()) {
+			cBean.setDiscontinued(discontinued.toString());
+		
+		} else {
+			cBean.setDiscontinued(null);
+		}
+		
+		cBean.setCompanyId(computer.getManufacturer().getId());
 		
 		try {
 			valDao.validateComputerBeanDb(cBean);
@@ -30,13 +55,6 @@ public class MapperDTOdb {
 		} catch (ValidationException e) {
 			logger.debug(e.getMessage());
 		}
-		
-		
-		cBean.setId(computer.getId());
-		cBean.setName(computer.getName());
-		cBean.setIntroduced(computer.getStart().toString());
-		cBean.setDiscontinued(computer.getEnd().toString());
-		cBean.setCompanyId(computer.getManufacturer().getId());
 		
 		return(cBean);
 	}

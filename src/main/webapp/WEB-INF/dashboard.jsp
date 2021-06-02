@@ -30,10 +30,8 @@
             <div id="actions" class="form-horizontal">
                 <div class="pull-left">
                     <form id="searchForm" action="#" method="GET" class="form-inline">
-
                         <input type="search" id="searchbox" name="search" class="form-control" placeholder="Search name" />
-                        <input type="submit" id="searchsubmit" value="Filter by name"
-                        class="btn btn-primary" />
+                        <input type="submit" id="searchsubmit" value="Filter by name" class="btn btn-primary" />
                     </form>
                 </div>
                 <div class="pull-right">
@@ -58,26 +56,39 @@
                         <th class="editMode" style="width: 60px; height: 22px;">
                             <input type="checkbox" id="selectall" /> 
                             <span style="vertical-align: top;">
-                                 -  <a href="#" id="deleteSelected" onclick="$.fn.deleteSelected();">
+                            	<c:url value ="/app" var = "lienDashboard" >
+                            		<c:param name="pageNumber" value="${ pageNumber }" />
+                            		<c:param name="choice" value="${ choice }" />
+		                       		<c:param name="order" value="${ order }" />	
+                            	</c:url>
+                                 -  <a href="${ lienDashboard }" id="deleteSelected" onclick="$.fn.deleteSelected();">
                                         <i class="fa fa-trash-o fa-lg"></i>
                                     </a>
                             </span>
                         </th>
-                        <th>
-                            Computer name
-                        </th>
-                        <th>
-                            Introduced date
-                        </th>
-                        <!-- Table header for Discontinued Date -->
-                        <th>
-                            Discontinued date
-                        </th>
-                        <!-- Table header for Company -->
-                        <th>
-                            Company
-                        </th>
-
+                        <c:forEach var="column" begin="0" end="3" step="1">
+                        	<th>	                       		
+                        		
+                        		<c:url value="/app" var="lienChoix" >
+                        			<c:param name="pageNumber" value="${ pageNumber }" />
+		                       		<c:param name="choice" value="${ column }" />
+		                       		<c:param name="order" value="${ (order+1)%2 }" />	                       		
+		                       	</c:url>
+		                       	
+                        		<a href="${ lienChoix }" >
+	                        		<c:out value="${ columnName[column] }"></c:out>
+	                        		<c:choose>
+		                                 <c:when test = "${order == 0 && choice == column}">
+		                                    &#x25BC
+		                                </c:when>
+		                                <c:when test = "${order == 1 && choice == column}">
+		                                    &#x25B2
+		                                </c:when>
+		                            </c:choose>	                            
+	                            </a>	                       	
+	                        	
+	                        </th>
+                        </c:forEach>
                     </tr>
                 </thead>
                 <!-- Browse attribute computers -->
@@ -85,7 +96,7 @@
                 	<c:forEach var="computer" items="${ page }">
                 		<tr>
                 			<td class="editMode">
-	                            <input type="checkbox" name="cb" class="cb" value="0">
+	                            <input type="checkbox" name="cb" class="cb" value="${ computer.id }">
 	                        </td>
 	                        <td>
 	                        	<c:url value="/edit" var="lienEdit" >
@@ -125,10 +136,12 @@
                 			<c:set var="correctNumber" value="${ pageNumber - 5 }" />
                 		</c:otherwise>                	
                 	</c:choose>
-                	<c:url value="/app" var="lienDashboardPrevious">
-                		<c:param name="pageNumber" value="${ correctNumber }" />
+                	<c:url value="/app" var="lienDashboardPrevious" >
+                		<c:param name="pageNumber" value ="${ correctNumber }" />
+                		<c:param name="choice" value="${ choice }" />
+		                <c:param name="order" value="${ order }" />	                	
                 	</c:url>
-                    <a href="<c:out value="${ lienDashboardPrevious }" default="#" />" aria-label="Previous">
+                    <a href="${ lienDashboardPrevious }" aria-label="Previous">
                       <span aria-hidden="true">&laquo;</span>
                     </a>
               </li>
@@ -138,7 +151,7 @@
               		<c:set var = "beginPage" value = "${ 4 - pageNumber }" />
               		<c:set var = "endPage" value = "${ 8 - pageNumber }" />
               	</c:when>
-              	<c:when test="${ (pageNumber + 2 ) > count/12 }">
+              	<c:when test="${ ( pageNumber + 2 ) > count/12 }">
               		<c:set var = "beginPage" value = "${ count/12 - pageNumber }" />
               		<c:set var = "endPage" value = "${ count/12 - pageNumber + 4}" />
               	</c:when>
@@ -152,6 +165,8 @@
               	<li>
               		<c:url value="/app" var="lienDashboard">
               			<c:param name="pageNumber" value="${ pageNumber + i -4}" />
+              			<c:param name="choice" value="${ choice }" />
+		                <c:param name="order" value="${ order }" />	
               		</c:url>
               		<a href="<c:out value="${ lienDashboard }" />" >
               			<c:out value="${ pageNumber + i -4}" />
@@ -162,7 +177,6 @@
               <li>
               	<c:choose>
                 		<c:when test="${ (pageNumber + 5) > count/12 }">
-                			<c:set var="bufferNumber" value="${ count/12 }" />
                 			<fmt:parseNumber var="correctNumber" integerOnly="true" type="number" value="${ count/12 }" />
                 		</c:when>
                 		<c:otherwise>
@@ -171,6 +185,8 @@
                 	</c:choose>
                 	<c:url value="/app" var="lienDashboardNext">
                 		<c:param name="pageNumber" value="${ correctNumber }" />
+                		<c:param name="choice" value="${ choice }" />
+		                <c:param name="order" value="${ order }" />	
                 	</c:url>
                     <a href="<c:out value="${ lienDashboardNext }" default="#" />" aria-label="Next">
                       <span aria-hidden="true">&raquo;</span>

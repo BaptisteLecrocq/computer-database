@@ -21,22 +21,37 @@ import com.excilys.cdb.mapper.Mapper;
 import com.excilys.cdb.mapper.MapperDTOdb;
 import com.excilys.cdb.model.Company;
 import com.excilys.cdb.model.Computer;
+import com.excilys.cdb.model.RequestParameter;
 
 
 public class DAO {
 	
-	private final String countComputer = "SELECT COUNT(*) FROM computer";
-	private final String countCompany = "SELECT COUNT(*) FROM company";
-	private final String getLastComputerId = "SELECT max(id) FROM computer;";
+	private static final String getComputer = "SELECT computer.id, computer.name, computer.introduced, computer.discontinued, computer.company_id, company.name ";
+	private static final String getCompany = "SELECT id, name ";
+	private static final String doCount = "SELECT COUNT(computer.id) ";
+	private static final String allComputers = "FROM computer LEFT JOIN company ON computer.company_id = company.id ";
+	private static final String allCompanies = "FROM company ";
+	private static final String searchComputer = " WHERE computer.name LIKE ? ";
+	private static final String searchCompany = " WHERE company.name LIKE ? ";
+	private static final String page = " LIMIT ? OFFSET ?;";	
 	
-	private final String getAllComputers = "SELECT id,name,introduced,discontinued,company_id FROM computer;";
-	private final String getAllCompanies = "SELECT id,name FROM company;";
-	private final String addComputer = "INSERT INTO computer (name, introduced, discontinued, company_id) VALUES(?,?,?,?)";
-	private final String getOneComputer = "SELECT id,name,introduced,discontinued,company_id FROM computer WHERE id=?";
-	private final String updateComputer = "UPDATE computer SET name = ? ,introduced = ?, discontinued = ?, company_id = ? WHERE id=?";
-	private final String deleteComputer = "DELETE FROM computer WHERE id=?";
-	private final String getComputerPage = "SELECT id,name,introduced,discontinued,company_id FROM computer ORDER BY id LIMIT ? OFFSET ? ";
-	private final String getCompanyPage = "SELECT id,name FROM company ORDER BY id LIMIT ? OFFSET ?;";
+	private static final String getLastComputerId = "SELECT max(id) FROM computer;";	
+	private static final String addComputer = "INSERT INTO computer (name, introduced, discontinued, company_id) VALUES(?,?,?,?)";
+	private static final String getOneComputer = "SELECT computer.id, computer.name, computer.introduced, computer.discontinued, computer.company_id, company.name FROM computer LEFT JOIN company ON computer.company_id = company.id WHERE computer.id=?";
+	private static final String updateComputer = "UPDATE computer SET name = ? ,introduced = ?, discontinued = ?, company_id = ? WHERE id=?";
+	private static final String deleteComputer = "DELETE FROM computer WHERE id=?";
+	
+	private static final String getComputerPage = "SELECT computer.id, computer.name, computer.introduced, computer.discontinued, computer.company_id, company.name FROM computer LEFT JOIN company ON computer.company_id = company.id ORDER BY id LIMIT ? OFFSET ? ";
+	private static final String getCompanyPage = "SELECT id,name FROM company ORDER BY id LIMIT ? OFFSET ?;";
+	
+	private static final String searchComputerList = "SELECT computer.id, computer.name, computer.introduced, computer.discontinued, computer.company_id, company.name \n"
+			+"FROM computer LEFT JOIN company ON computer.company_id = company.id \n"
+			+"WHERE computer.name LIKE %?%";
+	
+	private static final String orderBy = "ORDER BY ";
+	private static final String[] order = { "", "ASC ", "DESC "};
+	private static final String[] column = { "computer.name ", "computer.introduced ", "computer.discontinued ", "company.name " };
+	
 	
 	private static Connection con;
 	private static Database db = Database.getInstance();
@@ -54,38 +69,47 @@ public class DAO {
 	
 	private DAO() {}
 	
+	/*            Simple Requests             */
+	
 	public Optional<ResultSet> simpleRequest(String query) {
-		Optional<ResultSet> results = Optional.empty();	
-		open();
+		Optional<ResultSet> results = Optional.empty();
+		Statement stmt;		
 		
-		try (Statement stmt = con.createStatement();){
+		try {
 			
+			con = db.getConnection();
+			stmt = con.createStatement();
 			results = Optional.ofNullable(stmt.executeQuery(query));
 			
 		} catch (SQLException e) {
 			logger.error(e.toString());
 		}
 		
-		stop();
-		return(results);		
+		return(results);	
 		
 	}
 	
-	public int countComputer() {
+	public int countAllComputer() {
 		
-		Optional<ResultSet> results = simpleRequest(countComputer);		
-		return(map.countComputer(results));
+		Optional<ResultSet> results = simpleRequest(doCount+allComputers+";");
+		int count = map.countComputer(results);
+		
+		close();
+		return(count);
 	}
 	
-	public int countCompany() {
+	public int countAllCompany() {
 		
-		Optional<ResultSet> results = simpleRequest(countCompany);
-		return(map.countCompany(results));
+		Optional<ResultSet> results = simpleRequest(doCount+allCompanies+";");
+		int count = map.countCompany(results);
+		
+		close();
+		return(count);
 	}
 
-	public ArrayList<Computer> listComputer(){
+	public ArrayList<Computer> listAllComputer(RequestParameter parameters){
 		
-		Optional<ResultSet> results = simpleRequest(getAllComputers);
+		Optional<ResultSet> results = simpleRequest(getComputer+allComputers+column[parameters.getChoice()]+order[parameters.getOrder()]+";");
 		ArrayList<Computer> listComputer = new ArrayList<Computer>();
 		
 		try {
@@ -93,12 +117,14 @@ public class DAO {
 		} catch (NotFoundException e) {
 			logger.info(e.toString());
 		}
+		
+		close();
 		return(listComputer);
 	}
 	
-	public ArrayList<Company> listCompany(){
+	public ArrayList<Company> listAllCompany(RequestParameter parameters){
 		
-		Optional<ResultSet> results = simpleRequest(getAllCompanies);
+		Optional<ResultSet> results = simpleRequest(getCompany+allCompanies+column[parameters.getChoice()]+order[parameters.getOrder()]+";");
 		ArrayList<Company> listCompany = new ArrayList<Company>();
 		
 		try {
@@ -106,23 +132,29 @@ public class DAO {
 		} catch (NotFoundException e) {
 			logger.info(e.toString());
 		}
+		
+		close();
 		return(listCompany);
 	}
 
 	public int getLastComputerId() {
 		
 		Optional<ResultSet> results = simpleRequest(getLastComputerId);
-		return(map.countComputer(results));
+		int id = map.countComputer(results);
+		
+		close();
+		return(id);
 	}
 	
+	
+	/*            CRUD Requests             */	
 	
 	public boolean addComputer(Computer computer){
 		
 		
 		ComputerBeanDb cBean = mapDb.mapModelToDTOdb(computer);
-		open();
 		
-		try ( PreparedStatement ps = con.prepareStatement(addComputer) ){			
+		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(addComputer) ){			
 			
 			ps.setString(1, cBean.getName());
 			ps.setInt(4, cBean.getCompanyId());
@@ -146,12 +178,10 @@ public class DAO {
 			
 			int results = ps.executeUpdate();
 			
-			stop();
 			return true;
 			
 		} catch(SQLException e){
 			logger.error(e.toString());
-			stop();
 			return false;
 		}
 	}
@@ -160,9 +190,8 @@ public class DAO {
 
 		Optional<ResultSet> results = Optional.empty();	
 		Optional<Computer> computer = Optional.empty();
-		open();
 		
-		try ( PreparedStatement ps = con.prepareStatement(getOneComputer) ) {
+		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(getOneComputer) ) {
 
 			ps.setInt(1, id);
 			results = Optional.ofNullable(ps.executeQuery());
@@ -175,7 +204,6 @@ public class DAO {
 			logger.info(e.toString());
 		}
 		
-		stop();
 		return(computer);
 		
 	}
@@ -183,9 +211,8 @@ public class DAO {
 	public boolean updateComputer(Computer computer){
 
 		ComputerBeanDb cBean = mapDb.mapModelToDTOdb(computer);
-		open();
 		
-		try ( PreparedStatement ps = con.prepareStatement(updateComputer) ) {
+		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(updateComputer) ) {
 			
 			ps.setString(1,cBean.getName());
 			ps.setInt(4, cBean.getCompanyId());
@@ -209,43 +236,42 @@ public class DAO {
 			}
 			
 			int results = ps.executeUpdate();
-			stop();
 			return true;
 			
 		} catch(SQLException e){
 			
 			logger.error(e.toString());
-			stop();
 			return false;
 		}
 	}
 	
 	public boolean deleteComputer(int id){
 
-		open();
-		
-		try ( PreparedStatement ps = con.prepareStatement(deleteComputer) ) {
+		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(deleteComputer) ) {
 					
 			ps.setInt(1,id);
 			int results = ps.executeUpdate();
 			
-			stop();
 			return true;
 			
 		}catch (SQLException e) {
 			logger.error(e.toString());			
-			stop();
 			return false;
 		}
 	}
 	
-	public ArrayList<Computer> getPageComputer (int start, int taille){
+	
+	/*            Page Requests             */	
+
+	public ArrayList<Computer> pageAllComputer (int start, int taille, RequestParameter parameters){
 		
 		Optional<ResultSet> results = Optional.empty();
 		ArrayList<Computer> pageComputer = new ArrayList<Computer>();
-		open();
 		
-		try ( PreparedStatement ps = con.prepareStatement(getComputerPage) ) {
+		String query = getComputer+allComputers+orderBy+column[parameters.getChoice()]+order[parameters.getOrder()]+page;
+		System.out.println(query);
+		
+		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
 		
 			ps.setInt(1, taille);
 			ps.setInt(2, start);
@@ -259,17 +285,17 @@ public class DAO {
 			logger.info(e.toString());
 		}
 		
-		stop();
 		return(pageComputer);
 	}
 	
-	public ArrayList<Company> getPageCompany (int start, int taille){
+	public ArrayList<Company> pageAllCompany (int start, int taille, RequestParameter parameters){
 		
 		Optional<ResultSet> results = Optional.empty();
-		ArrayList<Company> pageCompany = new ArrayList<Company>();		
-		open();
+		ArrayList<Company> pageCompany = new ArrayList<Company>();
 		
-		try ( PreparedStatement ps = con.prepareStatement(getCompanyPage) ) {
+		String query = getCompany+allCompanies+orderBy+column[parameters.getChoice()]+order[parameters.getOrder()]+page;
+		
+		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
 			
 			ps.setInt(1, taille);
 			ps.setInt(2, start);
@@ -283,40 +309,203 @@ public class DAO {
 			logger.info(e.toString());
 		}
 		
-		stop();
 		return(pageCompany);
 	}
 
-	public static Connection getCon() {
-		return con;
+	
+	/*            Composed Requests             */	
+	
+	public ArrayList<Computer> listComputer(RequestParameter parameters){
+		
+		if( parameters.getSearchTerm() == null) {
+			return(listAllComputer(parameters));
+		
+		} else {
+			
+			Optional<ResultSet> results = Optional.empty();
+			ArrayList<Computer> searchResult = new ArrayList<Computer>();
+			
+			try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(getComputer+allComputers+searchComputer+";") ) {
+				
+				ps.setString(1, "%"+parameters.getSearchTerm()+"%");
+				results = Optional.ofNullable(ps.executeQuery());
+				searchResult = map.mapComputerList(results);
+				
+				
+			} catch (SQLException e) {
+				logger.error(e.toString());
+				e.printStackTrace();
+				
+			} catch (NotFoundException e) {
+				logger.info(e.toString());
+			}
+			
+			return(searchResult);
+		}		
 	}
+	
+	public ArrayList<Company> listCompany(RequestParameter parameters){
+		
+		if( parameters.getSearchTerm() == null) {
+			return(listAllCompany(parameters));
+		
+		} else {
+			
+			Optional<ResultSet> results = Optional.empty();
+			ArrayList<Company> searchResult = new ArrayList<Company>();
+			
+			try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(getCompany+allCompanies+searchCompany+";") ) {
+				
+				ps.setString(1, "%"+parameters.getSearchTerm()+"%");
+				results = Optional.ofNullable(ps.executeQuery());
+				searchResult = map.mapCompanyList(results);
+				
+				
+			} catch (SQLException e) {
+				logger.error(e.toString());
+				e.printStackTrace();
+				
+			} catch (NotFoundException e) {
+				logger.info(e.toString());
+			}
+			
+			return(searchResult);
+		}		
+	}
+	
+	public int countComputer(RequestParameter parameters) {
+		
+		if( parameters.getSearchTerm() == null ) {
+			return(countAllComputer());
+		}
+		else {
+			
+			Optional<ResultSet> results = Optional.empty();
+			int count = 0;
+			
+			try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(doCount+allComputers+searchComputer+";") ) {
+				
+				ps.setString(1, "%"+parameters.getSearchTerm()+"%");
+				results = Optional.ofNullable(ps.executeQuery());
+				count = map.countComputer(results);
+						
+			} catch (SQLException e) {
+				logger.error(e.toString());
+				e.printStackTrace();
+			}
+						
+			return(count);
+		}			
+	}
+	
+	public int countCompany(RequestParameter parameters) {
+		
+		if(parameters.getSearchTerm() == null) {
+			return(countAllCompany());
+		}
+		else {
+			
+			Optional<ResultSet> results = Optional.empty();
+			int count = 0;
+			
+			try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(doCount+allCompanies+searchCompany+";") ) {
+				
+				ps.setString(1, "%"+parameters.getSearchTerm()+"%");
+				results = Optional.ofNullable(ps.executeQuery());
+				count = map.countCompany(results);
+						
+			} catch (SQLException e) {
+				logger.error(e.toString());
+				e.printStackTrace();
+			}
+						
+			return(count);
+		}			
+	}
+	
+	public ArrayList<Computer> pageComputer(int start, int taille, RequestParameter parameters){
+		
+		if( parameters.getSearchTerm() == null) {
+			return(pageAllComputer(start, taille, parameters));
+		
+		} else {
+			
+			Optional<ResultSet> results = Optional.empty();
+			ArrayList<Computer> searchResult = new ArrayList<Computer>();
+			
+			String query = getComputer+allComputers+searchComputer+orderBy+column[parameters.getChoice()]+order[parameters.getOrder()]+page;
+			
+			try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
+				
+				ps.setString(1, "%"+parameters.getSearchTerm()+"%");
+				ps.setInt(2, taille);
+				ps.setInt(3, start);
+				results = Optional.ofNullable(ps.executeQuery());
+				searchResult = map.mapComputerList(results);
+				
+				
+			} catch (SQLException e) {
+				logger.error(e.toString());
+				e.printStackTrace();
+				
+			} catch (NotFoundException e) {
+				logger.info(e.toString());
+			}
+			
+			return(searchResult);
+		}		
+	}
+	
+	public ArrayList<Company> pageCompany(int start, int taille, RequestParameter parameters){
+		
+		if( parameters.getSearchTerm() == null) {
+			return(pageAllCompany(start, taille, parameters));
+		
+		} else {
+			
+			Optional<ResultSet> results = Optional.empty();
+			ArrayList<Company> searchResult = new ArrayList<Company>();
+			
+			String query = getCompany+allCompanies+searchCompany+orderBy+column[parameters.getChoice()]+order[parameters.getOrder()]+page;
+
+			
+			try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
+				
+				ps.setString(1, "%"+parameters.getSearchTerm()+"%");
+				ps.setInt(2, taille);
+				ps.setInt(2, start);
+				results = Optional.ofNullable(ps.executeQuery());
+				searchResult = map.mapCompanyList(results);
+				
+				
+			} catch (SQLException e) {
+				logger.error(e.toString());
+				e.printStackTrace();
+				
+			} catch (NotFoundException e) {
+				logger.info(e.toString());
+			}
+			
+			return(searchResult);
+		}		
+	}
+	
+	/*            Utility             */	
+	
+ 	public static Connection getCon() {
+		return con;
+	}	
 
 	public static Database getDb() {
 		return db;
 	}
 	
-	
-	public void open() {
-
-		try {
-			
-			Class.forName(Database.getDriver());
-			con = DriverManager.getConnection(Database.getUrl(),Database.getUsername(),Database.getPassword());
-			
-		} catch (SQLException e) {
-			logger.error(e.toString());
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void stop() {
-
+	public void close() {
 		try {
 			con.close();
 		} catch (SQLException e) {
 			logger.error(e.toString());
+			e.printStackTrace();
 		}
 	}
 

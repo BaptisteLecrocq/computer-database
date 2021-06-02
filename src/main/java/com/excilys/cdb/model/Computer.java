@@ -108,8 +108,8 @@ public class Computer {
 			return(this);
 		}
 		
-		public ComputerBuilder withManufacturer(int company_id) {
-			this.manufacturer = new Company(company_id);
+		public ComputerBuilder withManufacturer(int company_id, String company_name) {
+			this.manufacturer = new Company(company_id, company_name);
 			return(this);
 		}
 		

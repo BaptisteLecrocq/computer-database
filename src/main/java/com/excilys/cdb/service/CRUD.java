@@ -18,20 +18,20 @@ public class CRUD {
 		return(firstCrud);
 	}
 	
-	public int countComputer() {
-		return(dao.countComputer());
+	public int countComputer(RequestParameter parameters) {
+		return(dao.countComputer(parameters));
 	}
 	
-	public int countCompany() {
-		return(dao.countCompany());
+	public int countCompany(RequestParameter parameters) {
+		return(dao.countCompany(parameters));
 	}
 	
-	public ArrayList<Computer> listComputer() throws NotFoundException{
-		return(dao.listComputer());
+	public ArrayList<Computer> listComputer(RequestParameter parameters) throws NotFoundException{
+		return(dao.listComputer(parameters));
 	}
 	
-	public ArrayList<Company> listCompany() throws NotFoundException{
-		return(dao.listCompany());
+	public ArrayList<Company> listCompany(RequestParameter parameters) throws NotFoundException{
+		return(dao.listCompany(parameters));
 	}
 	
 	public boolean addComputer(Computer computer) {
@@ -50,10 +50,11 @@ public class CRUD {
 		return(dao.findComputer(id));		
 	}
 
-	public ArrayList<Computer> pageComputerList(int start, int taille) {
-		return(dao.getPageComputer(start,taille));
+	public ArrayList<Computer> pageComputer(int start, int taille, RequestParameter parameters) {
+		return(dao.pageComputer(start, taille, parameters));
 	}
-	public ArrayList<Company> pageCompanyList(int start, int taille) {
-		return(dao.getPageCompany(start,taille));
-	}	
+	public ArrayList<Company> pageCompany(int start, int taille, RequestParameter parameters) {
+		return(dao.pageCompany(start, taille, parameters));
+	}
+	
 }

@@ -104,7 +104,7 @@ public class ValidateDTO {
 	private boolean validateCompanyExists(String id) {
 		
 		int companyId = Integer.parseInt(id);
-		int last = service.countCompany();
+		int last = service.countCompany(null);
 		return(companyId < 0 || companyId > last);
 	}
 }

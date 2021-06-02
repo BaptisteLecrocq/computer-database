@@ -10,8 +10,7 @@ public class PageCompany extends Page {
 	private ArrayList<Company> elements;
 	
 	public PageCompany(int start, int taille, int pageNumber) {
-		
-		this.elements = CRUD.getInstance().pageCompanyList(start, taille);
+		 
 		this.taille = taille;
 		this.start = start;	
 		this.pageNumber = pageNumber;
@@ -46,8 +45,8 @@ public class PageCompany extends Page {
 		return elements;
 	}
 
-	public void setElements(ArrayList<Company> elements) {
-		this.elements = elements;
+	public void setElements(ArrayList<?> elements) {
+		this.elements = (ArrayList<Company>) elements;
 	}
 	
 	public String toString() {

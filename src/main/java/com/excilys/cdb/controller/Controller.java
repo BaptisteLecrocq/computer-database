@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.excilys.cdb.beans.CompanyBean;
 import com.excilys.cdb.beans.ComputerBean;
+import com.excilys.cdb.beans.RequestParameterBean;
 import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.mapper.Mapper;
 import com.excilys.cdb.mapper.MapperDTO;
@@ -34,6 +35,7 @@ public class Controller {
 	private LocalDate introduced;
 	private LocalDate discontinued;
 	private int company_id;
+	private String company_name;
 	
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	private static Logger logger = LoggerFactory.getLogger(Controller.class);
@@ -43,23 +45,30 @@ public class Controller {
 		sc = new Scanner(System.in);
 	}
 	
-	public Optional<String> initPage(Class<?> type, int taille) {
+	/*              Page Management                */
+
+	public Optional<String> initPage(Class<?> type, int taille,RequestParameterBean pBean) {
 		
-		return (this.initPage(type, taille, 0));		
+		return (this.initPage(type, taille, 0, pBean));	
 
 	}
 	
-	public Optional<String> initPage(Class<?> type, int taille, int numberPage) {
+	public Optional<String> initPage(Class<?> type, int taille, int numberPage, RequestParameterBean pBean) {
 		
-		Page.count = service.countComputer();
+		
 		Optional<String> message = Optional.empty();
+		RequestParameter parameters = mapDTO.mapParameters(pBean);
 		
 		if (val.tailleValide(taille)) {
 			if (type == Computer.class) {				
 				page = computerFactory.getPage(numberPage*taille, taille, numberPage);
+				page.setElements(service.pageComputer(numberPage*taille, taille, parameters));
+				Page.count = service.countComputer(parameters);
 				
 			} else if (type == Company.class) {
 				page = companyFactory.getPage(numberPage*taille, taille, numberPage);
+				page.setElements(service.pageCompany(numberPage*taille, taille, parameters));
+				Page.count = service.countCompany(parameters);
 			}
 			
 		} else {
@@ -84,23 +93,37 @@ public class Controller {
 		return ("Page précédente :");
 	}
 	
+	public Page getPage() {
+		return page;
+	}
+
+	public void setPage(Page p) {
+		this.page = p;
+	}
 	
-	public ArrayList<Computer> listComputer(){
+	
+	/*            CRUD Requests towards Database             */
+	
+	
+
+	public ArrayList<Computer> listComputer(RequestParameter parameters){
 		ArrayList<Computer> computerList = new ArrayList<Computer>();
 		try {
-			computerList = service.listComputer();
+			computerList = service.listComputer(parameters);
 		} catch (NotFoundException e) {
+			logger.info(e.toString());
 			e.printStackTrace();
 		}
 		
 		return(computerList);
 	}
 	
-	public ArrayList<Company> listCompany(){
+	public ArrayList<Company> listCompany(RequestParameter parameters){
 		ArrayList<Company> companyList = new ArrayList<Company>();
 		try {
-			companyList = service.listCompany();
+			companyList = service.listCompany(parameters);
 		} catch (NotFoundException e) {
+			logger.toString();
 			e.printStackTrace();
 		}
 		
@@ -134,6 +157,20 @@ public class Controller {
 		return (service.deleteComputer(idComputer));
 	}
 	
+	public void deleteList(String list) {
+		String[] computers = list.split(",");
+		int id = 0;
+		
+		for(String s:computers) {
+			
+			id = Integer.parseInt(s);
+			deleteComputer(id);
+			
+		}
+	}
+	
+	
+	/*             CRUD Request towards/from Web UI          */
 	
 	public ArrayList<String> addComputerBean(ComputerBean cbean) {
 		
@@ -163,58 +200,54 @@ public class Controller {
 		
 	}
 
+	public ArrayList<ComputerBean> listComputerBean (RequestParameter parameters) {
+		
+		ArrayList<Computer> computerList = listComputer(parameters);
+		ArrayList<ComputerBean> searchResult = new ArrayList<ComputerBean>();
+		
+		for(Computer c:computerList) {
+			searchResult.add(mapDTO.mapComputerToDTO(c));			
+		}
+		
+		return(searchResult);
+	}
+
 	public ArrayList<CompanyBean> listCompanyBean(){
 		
-		ArrayList<CompanyBean> list = new ArrayList<CompanyBean>();
+		ArrayList<CompanyBean> listBean = new ArrayList<CompanyBean>();
+		ArrayList<Company> list = listCompany(null);
 		
-		for(Company c:listCompany()) {
+		
+		for(Company c:list) {
 			CompanyBean cBean = new CompanyBean();
 			cBean.setId(c.getId());
 			cBean.setName(c.getName());
 			
-			list.add(cBean);
+			listBean.add(cBean);
 		}
-		return(list);		
+		return(listBean);		
 		
 	}
 
-	public ArrayList<ComputerBean> pageComputer(){
+	public ArrayList<ComputerBean> pageComputerBean(){
 		
-		ArrayList<ComputerBean> pageComputer = new ArrayList<ComputerBean>();
+		ArrayList<ComputerBean> pageComputerBean = new ArrayList<ComputerBean>();
+		ArrayList<Computer> pageElements = (ArrayList<Computer>)(page.getElements());
 		
-		Optional<LocalDate> introducedBuffer = Optional.empty();
-		Optional<LocalDate> discontinuedBuffer = Optional.empty();
-		
-		for(Computer c:((ArrayList<Computer>)(page.getElements()))) {
-			
-			ComputerBean cBean = new ComputerBean();
-
-			cBean.setId(""+c.getId());
-			cBean.setName(c.getName());
-			cBean.setCompany(c.getManufacturer().getName());
-			
-			introducedBuffer = Optional.ofNullable(c.getStart());
-			if(introducedBuffer.isPresent()) {
-				cBean.setIntroduced(introducedBuffer.get().toString());
-			}
-			
-			discontinuedBuffer = Optional.ofNullable(c.getEnd());
-			if(discontinuedBuffer.isPresent()) {
-				cBean.setDiscontinued(discontinuedBuffer.get().toString());
-			}
-			
-			
-			pageComputer.add(cBean);
-			
+		for(Computer c:pageElements) {				
+			pageComputerBean.add(mapDTO.mapComputerToDTO(c));			
 		}
 		
-		return(pageComputer);
+		return(pageComputerBean);
 		
 	}
 	
 	
+	
 
-	public void initComputer() {
+	/*         CLI Computer Management         */
+	
+ 	public void initComputer() {
 		this.id = 0;
 		this.name = null;
 		this.introduced = null;
@@ -274,31 +307,29 @@ public class Controller {
 		}
 	}
 
-	public void setCompany_id(int company_id) {
+	public void setCompanyId(int company_id) {
 		this.company_id = company_id;
 	}
 	
-	public void buildComputer() {
+	public void setCompanyName(String company_name) {
+		this.company_name = company_name;
+	}
+	
+ 	public void buildComputer() {
 		this.computer = new Computer
 				.ComputerBuilder(name)
 				.withId(id)
 				.withStart(introduced)
 				.withEnd(discontinued)
-				.withManufacturer(company_id)
+				.withManufacturer(company_id, company_name)
 				.build();
 	}
 	
+ 	
+ 	/*          Utility            */
 	
 	public LocalDate getStart() {
 		return introduced;
-	}
-	
-	public Page getPage() {
-		return page;
-	}
-
-	public void setPage(Page p) {
-		this.page = p;
 	}
 	
 	public void setComputer(Computer c) {
