@@ -17,9 +17,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.excilys.main;
+import com.excilys.cdb.beans.RequestParameterBean;
 import com.excilys.cdb.dao.DAO;
 import com.excilys.cdb.dao.Database;
 import com.excilys.cdb.model.Computer;
+import com.excilys.cdb.model.RequestParameter;
 
 public class DAOTest {
 	
@@ -41,7 +43,7 @@ public class DAOTest {
     @Test
     public void requestAllComputerNotNull() {
     	
-    	ArrayList<Computer> results = daotest.listComputer();
+    	ArrayList<Computer> results = daotest.listComputer(new RequestParameter());
     	assertTrue(results.size()>0);
     }
     

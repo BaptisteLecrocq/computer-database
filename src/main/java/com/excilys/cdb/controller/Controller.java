@@ -10,13 +10,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.excilys.cdb.beans.CompanyBean;
+import com.excilys.cdb.beans.CompanyBeanCLI;
 import com.excilys.cdb.beans.ComputerBean;
+import com.excilys.cdb.beans.ComputerBeanCLI;
 import com.excilys.cdb.beans.RequestParameterBean;
 import com.excilys.cdb.exception.NotFoundException;
+import com.excilys.cdb.exception.TransactionException;
 import com.excilys.cdb.mapper.Mapper;
+import com.excilys.cdb.mapper.MapperCLI;
 import com.excilys.cdb.mapper.MapperDTO;
 import com.excilys.cdb.model.*;
 import com.excilys.cdb.service.CRUD;
+import com.excilys.cdb.ui.Validation;
 
 public class Controller {
 	
@@ -25,19 +30,17 @@ public class Controller {
 	private final PageComputerFactory computerFactory = new PageComputerFactory();
 	private final PageCompanyFactory companyFactory = new PageCompanyFactory();
 	private Page page;
-	private Validation val = new Validation();
-	private ValidateDTO valDTO = new ValidateDTO();
+	
+	private ValidateDTO valDTO = ValidateDTO.getInstance();
 	private MapperDTO mapDTO = MapperDTO.getInstance();
+	private MapperCLI mapCLI = MapperCLI.getInstance();
 	
 	private Computer computer;
-	private int id;
-	private String name;
-	private LocalDate introduced;
-	private LocalDate discontinued;
-	private int company_id;
-	private String company_name;
 	
-	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	private Company company;
+	private int companyId;
+	private String companyName;
+	
 	private static Logger logger = LoggerFactory.getLogger(Controller.class);
 
 	
@@ -47,35 +50,27 @@ public class Controller {
 	
 	/*              Page Management                */
 
-	public Optional<String> initPage(Class<?> type, int taille,RequestParameterBean pBean) {
+	public void initPage(Class<?> type, int taille,RequestParameterBean pBean) {
 		
-		return (this.initPage(type, taille, 0, pBean));	
+		this.initPage(type, taille, 0, pBean);	
 
 	}
 	
-	public Optional<String> initPage(Class<?> type, int taille, int numberPage, RequestParameterBean pBean) {
+	public void initPage(Class<?> type, int taille, int numberPage, RequestParameterBean pBean) {
 		
 		
-		Optional<String> message = Optional.empty();
-		RequestParameter parameters = mapDTO.mapParameters(pBean);
-		
-		if (val.tailleValide(taille)) {
-			if (type == Computer.class) {				
-				page = computerFactory.getPage(numberPage*taille, taille, numberPage);
-				page.setElements(service.pageComputer(numberPage*taille, taille, parameters));
-				Page.count = service.countComputer(parameters);
-				
-			} else if (type == Company.class) {
-				page = companyFactory.getPage(numberPage*taille, taille, numberPage);
-				page.setElements(service.pageCompany(numberPage*taille, taille, parameters));
-				Page.count = service.countCompany(parameters);
-			}
+		RequestParameter parameters = mapDTO.mapParameters(pBean);		
+
+		if (type == Computer.class) {				
+			page = computerFactory.getPage(numberPage*taille, taille, numberPage);
+			page.setElements(service.pageComputer(numberPage*taille, taille, parameters));
+			Page.count = service.countComputer(parameters);
 			
-		} else {
-			message = Optional.of("Invalid size");
-		}
-		
-		return (message);		
+		} else if (type == Company.class) {
+			page = companyFactory.getPage(numberPage*taille, taille, numberPage);
+			page.setElements(service.pageCompany(numberPage*taille, taille, parameters));
+			Page.count = service.countCompany(parameters);
+		}	
 
 	}
 	
@@ -149,6 +144,10 @@ public class Controller {
 		return (service.addComputer(computer));
 	}
 
+	public void addCompany() {
+		service.addCompany(company);
+	}
+
 	public boolean updateComputer() {
 		return (service.updateComputer(computer));
 	}
@@ -157,7 +156,23 @@ public class Controller {
 		return (service.deleteComputer(idComputer));
 	}
 	
-	public void deleteList(String list) {
+	public ArrayList<String> deleteCompany(int idCompany) {
+		
+		ArrayList<String> error = new ArrayList<String>();
+		
+		try {
+			service.deleteCompany(idCompany);
+			
+		} catch (TransactionException e) {
+			logger.debug(e.getMessage());
+			error.add(e.getMessage());
+			e.printStackTrace();
+		}
+		
+		return(error);
+	}
+
+ 	public void deleteList(String list) {
 		String[] computers = list.split(",");
 		int id = 0;
 		
@@ -177,21 +192,24 @@ public class Controller {
 		ArrayList<String> errors = valDTO.validateComputerBean(cbean);
 		
 		if(errors.isEmpty()) {
-			initComputer();
+			
+			this.computer = null;
 			setComputer(mapDTO.mapDTOToComputer(cbean));
-			addComputer();			
+			addComputer();
+			
 		}
 		
 		return(errors);
 		
 	}
-	
+
 	public ArrayList<String> editComputerBean(ComputerBean cbean) {
 		
 		ArrayList<String> errors = valDTO.validateComputerBean(cbean);
 		
 		if(errors.isEmpty()) {
-			initComputer();
+			
+			this.computer = null;
 			setComputer(mapDTO.mapDTOToComputer(cbean));
 			updateComputer();	
 		}
@@ -247,90 +265,19 @@ public class Controller {
 
 	/*         CLI Computer Management         */
 	
- 	public void initComputer() {
-		this.id = 0;
-		this.name = null;
-		this.introduced = null;
-		this.discontinued = null;
-		this.company_id = 0;
-	}
+ 	public void setComputerCLI( ComputerBeanCLI cBean ) {
+ 		this.computer = mapCLI.mapComputerCliDTOToModel(cBean);
+ 	}
 	
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public boolean setName(String name) {
-		if (val.nameValide(name)) {
-			this.name = name;
-			return true;
-		
-		} else {
-			return false;
-		}
-		
-	}
-
-	public boolean setStart(String start) {
-		if (start.equals("n") || start == null) {
-			this.introduced = null;
-			return true;
-		
-		} else {
-			try {
-				this.introduced = LocalDate.parse(start, formatter);
-				return true;
-			} catch (Exception e) {
-				e.printStackTrace();
-				return false;
-			} 
-		}
-	}
-
-	public boolean setEnd(String end) {
-		if (end.equals("n") || end == null ) {
-			this.discontinued = null;
-			return true;
-		
-		} else {
-			try {
-				LocalDate dateTest = LocalDate.parse(end, formatter);
-				if (val.startBeforeEndValide(this.getStart(), dateTest)) {
-					this.discontinued = dateTest;
-					return true;
-				
-				} else {
-					return false;
-				}
-			} catch (Exception e) {
-				return false;
-			} 
-		}
-	}
-
-	public void setCompanyId(int company_id) {
-		this.company_id = company_id;
-	}
-	
-	public void setCompanyName(String company_name) {
-		this.company_name = company_name;
-	}
-	
- 	public void buildComputer() {
-		this.computer = new Computer
-				.ComputerBuilder(name)
-				.withId(id)
-				.withStart(introduced)
-				.withEnd(discontinued)
-				.withManufacturer(company_id, company_name)
-				.build();
-	}
-	
+ 
+ 	/*         CLI Company Management         */
+ 	
+ 	
+ 	public void setCompanyCLI( CompanyBeanCLI cBean ) {
+ 		this.company = mapCLI.mapCompanyCliDTOToModel(cBean);
+ 	}
  	
  	/*          Utility            */
-	
-	public LocalDate getStart() {
-		return introduced;
-	}
 	
 	public void setComputer(Computer c) {
 		this.computer = c;

@@ -1,8 +1,11 @@
 package com.excilys.cdb.ui;
 
+import java.util.ArrayList;
 import java.util.Optional; 
 import java.util.Scanner;
 
+import com.excilys.cdb.beans.CompanyBeanCLI;
+import com.excilys.cdb.beans.ComputerBeanCLI;
 import com.excilys.cdb.beans.RequestParameterBean;
 import com.excilys.cdb.controller.*;
 import com.excilys.cdb.model.Company;
@@ -11,18 +14,19 @@ import com.excilys.cdb.model.Computer;
 public class CLI {
 	
 		
-	private final String[] menu =  {"1) List computers", "2) List companies", "3) Show one computer", "4) Create a computer", "5) Update a computer", "6) Delete a computer", "7) Exit"};
+	private final String[] menu =  {"1) List computers", "2) List companies", "3) Show one computer", "4) Create a computer", "5) Update a computer", "6) Delete a computer", "7) Create a Company", "8) Delete a Company", "9) Exit"};
 	private final String[] commande = {"Computer List :", "Company List :", "Computer found :", "Computer created", "Computer Updated", "Computer Deleted"};
 	private final String[] failure = {"Couldn't access Computer list", "Couldn't access Company list", "Computer not found", "Computer not created", "Computer not found", "Computer not found"};
-	private final String[] order = {"Enter the following computer attributes :", "-Id ( -1 for no input ) :", "-Name :", "-Introduction date ( yyyy-mm-dd | n if null ) :", "-Discontinuation Date ( yyyy-mm-dd | n if null ) :", "-Company Id ( 0 if null ) :"};
+	private final String[] order = {"Enter the following computer attributes :", "-Id :", "-Name :", "-Introduction date ( yyyy-mm-dd | n if null ) :", "-Discontinuation Date ( yyyy-mm-dd | n if null ) :", "-Company Id ( 0 if null ) :"};
+	private final String[] orderCompany = { "Enter the following computer attributes :","-Id :", "-Name :"};
 	
 	private MenuChoice status;
 	Scanner sc;
-	private Controller control;
+	private Controller control = new Controller();
+	private Validation val = Validation.getInstance();
 	
 	public CLI() {
 		status = MenuChoice.MENU;
-		control = new Controller();
 		this.init();
 	}
 	
@@ -36,17 +40,21 @@ public class CLI {
 			
 			case COMPUTER_LIST:
 				
-				System.out.println("Enter the Page length :" + "\n");		
-				int taille1 = sc.nextInt();
+				System.out.println("Enter the Page length :" + "\n");	
 				
-				Optional<String> testPage1 = control.initPage(Computer.class, taille1, new RequestParameterBean());
-				if (!testPage1.isPresent()) {
+				int taille1 = sc.nextInt();
+				ArrayList<String> taille1Test = val.valTaille(taille1);
+				
+				while(!taille1Test.isEmpty()) {
 					
-					gestionPage();
+					System.out.println(taille1Test.toString());
+					System.out.println("Enter the Page length :" + "\n");
 					
-				} else {
-					System.out.println(testPage1.get());
+					taille1 = sc.nextInt();
+					taille1Test = val.valTaille(taille1);					
 				}
+				
+				control.initPage(Computer.class, taille1, new RequestParameterBean());
 							
 				status = MenuChoice.MENU;				
 				break;
@@ -54,16 +62,20 @@ public class CLI {
 			case COMPANY_LIST:
 				
 				System.out.println("Enter the Page length :" + "\n");
-				int taille2 = sc.nextInt();	
 				
-				Optional<String> testPage2 = control.initPage(Company.class, taille2, new RequestParameterBean());
-				if (!testPage2.isPresent()) {
+				int taille2 = sc.nextInt();
+				ArrayList<String> taille2Test = val.valTaille(taille2);
+				
+				while(!taille2Test.isEmpty()) {
 					
-					gestionPage();
+					System.out.println(taille2Test.toString());
+					System.out.println("Enter the Page length :" + "\n");
 					
-				} else {
-					System.out.println(testPage2.get());
+					taille2 = sc.nextInt();
+					taille2Test = val.valTaille(taille2);					
 				}
+				
+				control.initPage(Computer.class, taille2, new RequestParameterBean());
 							
 				status = MenuChoice.MENU;
 				
@@ -84,7 +96,7 @@ public class CLI {
 				
 			case ADD_COMPUTER:
 				
-				demande();
+				control.setComputerCLI(askComputer());
 				retour(control.addComputer());
 				
 				sc.next();				
@@ -94,7 +106,7 @@ public class CLI {
 			
 			case UPDATE_COMPUTER:
 				
-				demande();			
+				askComputer();			
 				retour(control.updateComputer());
 				
 				sc.next();				
@@ -114,6 +126,25 @@ public class CLI {
 				status = MenuChoice.MENU;
 				
 				break;				
+			
+			case ADD_COMPANY:
+				
+				control.setCompanyCLI(askCompany());
+				control.addCompany();
+				
+				sc.next();				
+				status = MenuChoice.MENU;
+				
+				break;
+				
+			case DELETE_COMPANY:
+				
+				System.out.println(orderCompany[0] + "\n");
+				System.out.println(orderCompany[1] + "\n");
+				
+				control.deleteCompany(sc.nextInt());
+				
+				break;
 			
 			case EXIT:
 				
@@ -156,9 +187,9 @@ public class CLI {
 		}
 	}
 	
-	public void demande() {
+	public ComputerBeanCLI askComputer() {
 		
-		control.initComputer();
+		ComputerBeanCLI cBean = new ComputerBeanCLI();
 		
 		int i = 0;
 		while (i < order.length) {
@@ -168,50 +199,134 @@ public class CLI {
 	
 			//Waits for computer id
 			case 1:
-				control.setId(sc.nextInt());
+				if( status == MenuChoice.UPDATE_COMPUTER ) {
+					cBean.setId((sc.nextInt()));
+				}				
 				break;
 				
 			//Waits for computer name
 			case 2:
-				boolean nameTest = control.setName(sc.next());				
 				
-				while (!nameTest) {
-					System.out.println("Name can't be null" + "\n");
-					nameTest = control.setName(sc.next());
+				String name = sc.next();
+				ArrayList<String> nameTest = val.valName(name);	
+				
+				while (!nameTest.isEmpty()) {
+					System.out.println(nameTest.toString());
+					name = sc.next();
+					nameTest = val.valName(name);
 				}
+				
+				cBean.setName(name);				
 				break;
 				
 			//Waits and check for introduction date
 			case 3:
-				boolean startTest = control.setStart(sc.next());
+				System.out.println(order[i] + "\n");
 				
-				while (!startTest) {
-					System.out.println("Wrong date format" + "\n");
-					startTest = control.setStart(sc.next());
+				String start = sc.next();
+				ArrayList<String> startTest = val.valStart(start);	
+				
+				while (!startTest.isEmpty()) {
+					
+					System.out.println(startTest.toString());
+					System.out.println(order[i] + "\n");
+					
+					start = sc.next();
+					startTest = val.valStart(start);
 				}
+				
+				cBean.setIntroduced(start);
 				break;	
 				
 			//Waits and check for discontinuation date
 			case 4:
-				boolean endTest = control.setEnd(sc.next());
+				System.out.println(order[i] + "\n");
 				
-				while (!endTest) {
-					System.out.println("Wrong date format or Discontunation Date higher than Introduction Date" + "\n");
+				String end = sc.next();
+				ArrayList<String> endTest = val.valEnd(cBean.getIntroduced(), end);	
+				
+				while (!endTest.isEmpty()) {
+					
+					System.out.println(endTest.toString());
 					System.out.println(order[i] + "\n");
-					System.out.println("Reminder, Introduction Date is :" + control.getStart() + "\n");
-					endTest = control.setEnd(sc.next());
+					System.out.println("Reminder, Introduction Date is :" + cBean.getIntroduced() + "\n");
+					
+					end = sc.next();
+					endTest = val.valEnd(cBean.getIntroduced(), end);
 				}
+				
+				cBean.setDiscontinued(end);
 				break;
 				
 			//Waits for company id
 			case 5:
-				control.setCompanyId(sc.nextInt());
+				
+				System.out.println(order[i] + "\n");
+				
+				int companyId = sc.nextInt();
+				ArrayList<String> companyIdTest = val.valCompanyId(companyId);	
+				
+				while (!companyIdTest.isEmpty()) {
+					
+					System.out.println(companyIdTest.toString());
+					System.out.println(order[i] + "\n");
+					
+					companyId = sc.nextInt();
+					companyIdTest = val.valCompanyId(companyId);
+				}				
+				
+				cBean.setCompany_id(companyId);
 				break;
+				
 			default:
 			}
 			i++;
 		}
-		control.buildComputer();
+		
+		return(cBean);
+	}
+	
+	public CompanyBeanCLI askCompany() {
+		
+		CompanyBeanCLI cBean = new CompanyBeanCLI();
+		
+		int i = 0;
+		while (i < orderCompany.length) {
+			
+			switch(i) {
+			case 0:
+				System.out.println(order[i] + "\n");
+				break;
+			
+			case 1:
+				System.out.println(order[i] + "\n");
+				
+				int companyId = sc.nextInt();
+				ArrayList<String> companyIdTest = val.valCompanyId(companyId);	
+				
+				while (!companyIdTest.isEmpty()) {
+					
+					System.out.println(companyIdTest.toString());
+					System.out.println(order[i] + "\n");
+					
+					companyId = sc.nextInt();
+					companyIdTest = val.valCompanyId(companyId);
+				}				
+				
+				cBean.setId(companyId);
+				break;
+			
+			case 2:
+				System.out.println(order[i] + "\n");
+				
+				cBean.setName(sc.next());
+				break;			
+			}
+			i++;
+		}
+		
+		return(cBean);
+		
 	}
 	
 	public void gestionPage() {

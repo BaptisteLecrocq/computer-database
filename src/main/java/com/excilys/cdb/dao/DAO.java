@@ -15,8 +15,10 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.excilys.cdb.beans.CompanyBeanDb;
 import com.excilys.cdb.beans.ComputerBeanDb;
 import com.excilys.cdb.exception.NotFoundException;
+import com.excilys.cdb.exception.TransactionException;
 import com.excilys.cdb.mapper.Mapper;
 import com.excilys.cdb.mapper.MapperDTOdb;
 import com.excilys.cdb.model.Company;
@@ -35,11 +37,15 @@ public class DAO {
 	private static final String searchCompany = " WHERE company.name LIKE ? ";
 	private static final String page = " LIMIT ? OFFSET ?;";	
 	
-	private static final String getLastComputerId = "SELECT max(id) FROM computer;";	
+	private static final String getLastComputerId = "SELECT max(id) FROM computer;";
+	private static final String getLastCompanyId = "SELECT max(id) FROM company;";
 	private static final String addComputer = "INSERT INTO computer (name, introduced, discontinued, company_id) VALUES(?,?,?,?)";
+	private static final String addCompany = "INSERT INTO company (name) VALUES(?)";
 	private static final String getOneComputer = "SELECT computer.id, computer.name, computer.introduced, computer.discontinued, computer.company_id, company.name FROM computer LEFT JOIN company ON computer.company_id = company.id WHERE computer.id=?";
 	private static final String updateComputer = "UPDATE computer SET name = ? ,introduced = ?, discontinued = ?, company_id = ? WHERE id=?";
 	private static final String deleteComputer = "DELETE FROM computer WHERE id=?";
+	private static final String deleteCompany = "DELETE FROM company WHERE id=?";
+	private static final String deleteComputers ="DELETE FROM computer WHERE company_id=?";
 	
 	private static final String getComputerPage = "SELECT computer.id, computer.name, computer.introduced, computer.discontinued, computer.company_id, company.name FROM computer LEFT JOIN company ON computer.company_id = company.id ORDER BY id LIMIT ? OFFSET ? ";
 	private static final String getCompanyPage = "SELECT id,name FROM company ORDER BY id LIMIT ? OFFSET ?;";
@@ -91,7 +97,7 @@ public class DAO {
 	
 	public int countAllComputer() {
 		
-		Optional<ResultSet> results = simpleRequest(doCount+allComputers+";");
+		Optional<ResultSet> results = simpleRequest(doCount+allComputers);
 		int count = map.countComputer(results);
 		
 		close();
@@ -100,7 +106,7 @@ public class DAO {
 	
 	public int countAllCompany() {
 		
-		Optional<ResultSet> results = simpleRequest(doCount+allCompanies+";");
+		Optional<ResultSet> results = simpleRequest(doCount+allCompanies);
 		int count = map.countCompany(results);
 		
 		close();
@@ -146,13 +152,22 @@ public class DAO {
 		return(id);
 	}
 	
+	public int getLastCompanyId() { 
+		
+		Optional<ResultSet> results = simpleRequest(getLastCompanyId);
+		int id = map.countCompany(results);
+		
+		close();
+		return(id);
+	}
+	
 	
 	/*            CRUD Requests             */	
 	
 	public boolean addComputer(Computer computer){
 		
 		
-		ComputerBeanDb cBean = mapDb.mapModelToDTOdb(computer);
+		ComputerBeanDb cBean = mapDb.mapComputerModelToDTOdb(computer);
 		
 		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(addComputer) ){			
 			
@@ -176,7 +191,7 @@ public class DAO {
 				ps.setDate(3, Date.valueOf(end.get()));
 			}
 			
-			int results = ps.executeUpdate();
+			ps.executeUpdate();
 			
 			return true;
 			
@@ -186,6 +201,28 @@ public class DAO {
 		}
 	}
 	
+	public void addCompany(Company company) {
+		
+		CompanyBeanDb cBean = mapDb.mapCompanyModeltoDTOdb(company);
+		
+		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(addCompany) ){
+			
+			if( cBean.getName() == null) {
+				ps.setNull(1, 0);
+				
+			} else {
+				ps.setString(1, cBean.getName());
+			}
+			
+			ps.executeUpdate();
+			
+		} catch (SQLException e) {
+			logger.error(e.toString());
+			e.printStackTrace();
+		}
+		
+	}
+
 	public Optional<Computer> findComputer(int id){		
 
 		Optional<ResultSet> results = Optional.empty();	
@@ -210,7 +247,7 @@ public class DAO {
 	
 	public boolean updateComputer(Computer computer){
 
-		ComputerBeanDb cBean = mapDb.mapModelToDTOdb(computer);
+		ComputerBeanDb cBean = mapDb.mapComputerModelToDTOdb(computer);
 		
 		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(updateComputer) ) {
 			
@@ -258,6 +295,38 @@ public class DAO {
 			logger.error(e.toString());			
 			return false;
 		}
+	}
+	
+	public void deleteCompany(int id) throws TransactionException {
+		
+		try ( Connection con = db.getConnection(); 
+				PreparedStatement ps = con.prepareStatement(deleteComputers); 
+				PreparedStatement ps2 = con.prepareStatement(deleteCompany) ){
+			
+			con.setAutoCommit(false);
+			
+			ps.setInt(1, id);
+			ps.executeUpdate();
+			ps2.setInt(1, id);
+			ps2.executeUpdate();
+			
+			con.commit();
+			
+		} catch (SQLException e) {
+			logger.error(e.toString());
+			e.printStackTrace();
+			
+			try {
+				con.rollback();
+				
+			} catch (SQLException e1) {
+				logger.info(e1.toString());
+				e1.printStackTrace();
+				throw new TransactionException("Delete Company Transaction failed");
+			}
+			
+		} 
+		
 	}
 	
 	

@@ -1,7 +1,7 @@
 package com.excilys.cdb.beans;
 
-public class CompanyBean {
-	
+public class CompanyBeanDb {
+
 	private int id;
 	private String name;	
 	
@@ -17,5 +17,5 @@ public class CompanyBean {
 	public void setName(String name) {
 		this.name = name;
 	}
-
+	
 }

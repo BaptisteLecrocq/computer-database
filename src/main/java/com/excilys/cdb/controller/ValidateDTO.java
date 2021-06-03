@@ -5,7 +5,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 import com.excilys.cdb.beans.ComputerBean;
+import com.excilys.cdb.model.RequestParameter;
 import com.excilys.cdb.service.CRUD;
+import com.excilys.cdb.ui.Validation;
 
 public class ValidateDTO {
 	
@@ -20,6 +22,15 @@ public class ValidateDTO {
 	private final String ERR_COMPANY = "Company does not exist";
 	
 	private CRUD service = CRUD.getInstance();
+	
+	//Singleton pattern	
+	private static ValidateDTO firstValidateDTO = new ValidateDTO();
+	public static ValidateDTO getInstance() {
+		return(firstValidateDTO);
+	}
+	
+	private ValidateDTO() { };
+	
 	
 	public ArrayList<String> validateComputerBean(ComputerBean cBean) {
 		
@@ -104,7 +115,7 @@ public class ValidateDTO {
 	private boolean validateCompanyExists(String id) {
 		
 		int companyId = Integer.parseInt(id);
-		int last = service.countCompany(null);
+		int last = service.countCompany(new RequestParameter());
 		return(companyId < 0 || companyId > last);
 	}
 }

@@ -6,9 +6,11 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.excilys.cdb.beans.CompanyBeanDb;
 import com.excilys.cdb.beans.ComputerBeanDb;
 import com.excilys.cdb.dao.ValidationDAO;
 import com.excilys.cdb.exception.ValidationException;
+import com.excilys.cdb.model.Company;
 import com.excilys.cdb.model.Computer;
 
 public class MapperDTOdb {
@@ -23,7 +25,7 @@ public class MapperDTOdb {
 	
 	private MapperDTOdb() {};
 	
-	public ComputerBeanDb mapModelToDTOdb( Computer computer ) {
+	public ComputerBeanDb mapComputerModelToDTOdb( Computer computer ) {
 		
 		ComputerBeanDb cBean = new ComputerBeanDb();		
 		
@@ -57,6 +59,18 @@ public class MapperDTOdb {
 		}
 		
 		return(cBean);
+	}
+	
+	public CompanyBeanDb mapCompanyModeltoDTOdb( Company company) {
+		
+		//valDao.validateCompany( company );
+		CompanyBeanDb cBean = new CompanyBeanDb();
+		
+		cBean.setId(company.getId());
+		cBean.setName(company.getName());
+		
+		return(cBean);
+		
 	}
 	
 }

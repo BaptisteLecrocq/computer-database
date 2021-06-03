@@ -2,6 +2,7 @@ package com.excilys.cdb.service;
 
 import com.excilys.cdb.dao.*;
 import com.excilys.cdb.exception.NotFoundException;
+import com.excilys.cdb.exception.TransactionException;
 import com.excilys.cdb.mapper.Mapper;
 import com.excilys.cdb.model.*;
 
@@ -26,6 +27,16 @@ public class CRUD {
 		return(dao.countCompany(parameters));
 	}
 	
+	public int getLastComputerId() {
+		return(dao.getLastComputerId());
+	}
+	
+	public int getLastCompanyId() {
+		return(dao.getLastCompanyId());
+	}
+	
+	/*            CRUD Requests            */
+
 	public ArrayList<Computer> listComputer(RequestParameter parameters) throws NotFoundException{
 		return(dao.listComputer(parameters));
 	}
@@ -38,21 +49,33 @@ public class CRUD {
 		return(dao.addComputer(computer));	
 	}
 	
-	public boolean updateComputer(Computer replace) {		
+	public void addCompany(Company company) {
+		dao.addCompany(company);
+	}
+
+	public boolean updateComputer(Computer replace) {
 		return(dao.updateComputer(replace));	
 	}
 	
-	public boolean deleteComputer(int id){
+	public boolean deleteComputer(int id) {
 		return(dao.deleteComputer(id));
 	}	
+	
+	public void deleteCompany(int id) throws TransactionException {
+		dao.deleteCompany(id);
+	}
 	
 	public Optional<Computer> getComputerById(int id) {		
 		return(dao.findComputer(id));		
 	}
 
+	
+	/*           Page Requests              */
+	
 	public ArrayList<Computer> pageComputer(int start, int taille, RequestParameter parameters) {
 		return(dao.pageComputer(start, taille, parameters));
 	}
+	
 	public ArrayList<Company> pageCompany(int start, int taille, RequestParameter parameters) {
 		return(dao.pageCompany(start, taille, parameters));
 	}
