@@ -4,21 +4,18 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
+import org.springframework.stereotype.Component;
+
 import com.excilys.cdb.beans.ComputerBean;
 import com.excilys.cdb.beans.RequestParameterBean;
 import com.excilys.cdb.model.Computer;
 import com.excilys.cdb.model.RequestParameter;
 
+
+@Component
 public class MapperDTO {
 	
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-	
-	private static MapperDTO firstMapper = new MapperDTO();
-	public static MapperDTO getInstance() {
-		return (firstMapper);
-	}
-	
-	private MapperDTO() {};
 	
 	public Computer mapDTOToComputer(ComputerBean cBean) {
 		
@@ -78,7 +75,7 @@ public class MapperDTO {
 		
 		parameters.setSearchTerm(pBean.getSearchTerm());
 		parameters.setChoice(pBean.getChoice());		
-		parameters.setOrder(pBean.getOrder()+1);
+		parameters.setOrder(pBean.getOrder());
 		
 		
 		return(parameters);

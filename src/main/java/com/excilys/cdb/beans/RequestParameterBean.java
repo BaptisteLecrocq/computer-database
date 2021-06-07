@@ -1,8 +1,9 @@
 package com.excilys.cdb.beans;
 
+
 public class RequestParameterBean {
 	
-	private String searchTerm;
+	private String searchTerm = "";
 	private int order;
 	private int choice;
 	

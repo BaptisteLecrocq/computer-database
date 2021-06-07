@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import com.excilys.cdb.beans.CompanyBeanDb;
 import com.excilys.cdb.beans.ComputerBeanDb;
@@ -13,17 +14,12 @@ import com.excilys.cdb.exception.ValidationException;
 import com.excilys.cdb.model.Company;
 import com.excilys.cdb.model.Computer;
 
+
+@Component
 public class MapperDTOdb {
 	
 	private ValidationDAO valDao = new ValidationDAO();
 	private static Logger logger = LoggerFactory.getLogger(MapperDTOdb.class);
-	
-	private static MapperDTOdb firstMapper = new MapperDTOdb();
-	public static MapperDTOdb getInstance() {
-		return (firstMapper);
-	}
-	
-	private MapperDTOdb() {};
 	
 	public ComputerBeanDb mapComputerModelToDTOdb( Computer computer ) {
 		

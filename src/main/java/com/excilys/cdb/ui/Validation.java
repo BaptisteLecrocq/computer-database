@@ -6,15 +6,19 @@ import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import com.excilys.cdb.controller.Controller;
 import com.excilys.cdb.service.CRUD;
 
-	public class Validation {
+@Component
+public class Validation {
 		
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	private static Logger logger = LoggerFactory.getLogger(Validation.class);
-	private CRUD service = CRUD.getInstance(); 
+	
+	@Autowired
+	private CRUD service; 
 		
 	private static final String nullName = "Name can't be null";
 	private static final String wrongDateFormat = "Wrong Date Format";
@@ -24,13 +28,7 @@ import com.excilys.cdb.service.CRUD;
 	private static final String impossibleCompanyId = "CompanyId is too high";
 	private static final String invalidSize = "Invalid Size";
 	
-	//Singleton pattern	
-	private static Validation firstVal = new Validation();
-	public static Validation getInstance() {
-		return(firstVal);
-	}
-	
-	private Validation() { };
+
 	
 	/*         Public Validation          */
 	

@@ -1,5 +1,6 @@
 package com.excilys.cdb.beans;
 
+
 public class TestBean {
 	
 	private String nom;

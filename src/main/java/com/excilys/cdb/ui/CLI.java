@@ -1,16 +1,21 @@
 package com.excilys.cdb.ui;
 
-import java.util.ArrayList;
-import java.util.Optional; 
+import java.util.ArrayList; 
 import java.util.Scanner;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.excilys.cdb.beans.CompanyBeanCLI;
 import com.excilys.cdb.beans.ComputerBeanCLI;
 import com.excilys.cdb.beans.RequestParameterBean;
-import com.excilys.cdb.controller.*;
-import com.excilys.cdb.model.Company;
+import com.excilys.cdb.controller.ControllerCentral;
 import com.excilys.cdb.model.Computer;
+import com.excilys.cdb.model.PageCompany;
+import com.excilys.cdb.model.PageComputer;
 
+
+@Component
 public class CLI {
 	
 		
@@ -18,16 +23,19 @@ public class CLI {
 	private final String[] commande = {"Computer List :", "Company List :", "Computer found :", "Computer created", "Computer Updated", "Computer Deleted"};
 	private final String[] failure = {"Couldn't access Computer list", "Couldn't access Company list", "Computer not found", "Computer not created", "Computer not found", "Computer not found"};
 	private final String[] order = {"Enter the following computer attributes :", "-Id :", "-Name :", "-Introduction date ( yyyy-mm-dd | n if null ) :", "-Discontinuation Date ( yyyy-mm-dd | n if null ) :", "-Company Id ( 0 if null ) :"};
-	private final String[] orderCompany = { "Enter the following computer attributes :","-Id :", "-Name :"};
+	private final String[] orderCompany = { "Enter the following company attributes :","-Id :", "-Name :"};
+	
+	@Autowired
+	private ControllerCentral control;
+	@Autowired
+	private Validation val;
+	
 	
 	private MenuChoice status;
 	Scanner sc;
-	private Controller control = new Controller();
-	private Validation val = Validation.getInstance();
 	
 	public CLI() {
 		status = MenuChoice.MENU;
-		this.init();
 	}
 	
 	public void init() {
@@ -54,7 +62,8 @@ public class CLI {
 					taille1Test = val.valTaille(taille1);					
 				}
 				
-				control.initPage(Computer.class, taille1, new RequestParameterBean());
+				control.initPage(PageComputer.class, taille1, new RequestParameterBean());
+				gestionPage();
 							
 				status = MenuChoice.MENU;				
 				break;
@@ -75,7 +84,8 @@ public class CLI {
 					taille2Test = val.valTaille(taille2);					
 				}
 				
-				control.initPage(Computer.class, taille2, new RequestParameterBean());
+				control.initPage(PageCompany.class, taille2, new RequestParameterBean());
+				gestionPage();
 							
 				status = MenuChoice.MENU;
 				
@@ -106,7 +116,7 @@ public class CLI {
 			
 			case UPDATE_COMPUTER:
 				
-				askComputer();			
+				control.setComputerCLI(askComputer());			
 				retour(control.updateComputer());
 				
 				sc.next();				
@@ -192,20 +202,25 @@ public class CLI {
 		ComputerBeanCLI cBean = new ComputerBeanCLI();
 		
 		int i = 0;
+		System.out.println(order[i] + "\n");
+		
 		while (i < order.length) {
-			System.out.println(order[i] + "\n");
 			
 			switch (i) {
 	
 			//Waits for computer id
 			case 1:
+				
 				if( status == MenuChoice.UPDATE_COMPUTER ) {
+					
+					System.out.println(order[i] + "\n");
 					cBean.setId((sc.nextInt()));
 				}				
 				break;
 				
 			//Waits for computer name
 			case 2:
+				System.out.println(order[i] + "\n");
 				
 				String name = sc.next();
 				ArrayList<String> nameTest = val.valName(name);	
@@ -260,7 +275,6 @@ public class CLI {
 				
 			//Waits for company id
 			case 5:
-				
 				System.out.println(order[i] + "\n");
 				
 				int companyId = sc.nextInt();

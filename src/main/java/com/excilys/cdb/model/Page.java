@@ -9,6 +9,8 @@ public abstract class Page {
 	protected int taille;
 	protected int start;
 	protected int pageNumber;
+	protected RequestParameter parameters;	
+	public Class<?> classe;
 	
 	public static int count;
 	
@@ -41,7 +43,18 @@ public abstract class Page {
 		return pageNumber;
 	}
 	
+	public RequestParameter getParameters() {
+		return parameters;
+	}
 	
+	public void setParameters(RequestParameter parameters) {
+		this.parameters = parameters;
+	}
 	
+	public Class<?> getClasse() {
+		return classe;
+	}
+	
+		
 	
 }

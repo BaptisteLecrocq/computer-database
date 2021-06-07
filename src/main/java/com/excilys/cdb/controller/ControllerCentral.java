@@ -1,13 +1,13 @@
 package com.excilys.cdb.controller;
 
-import java.time.LocalDate; 
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Scanner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
 import com.excilys.cdb.beans.CompanyBean;
 import com.excilys.cdb.beans.CompanyBeanCLI;
@@ -16,35 +16,36 @@ import com.excilys.cdb.beans.ComputerBeanCLI;
 import com.excilys.cdb.beans.RequestParameterBean;
 import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.exception.TransactionException;
-import com.excilys.cdb.mapper.Mapper;
 import com.excilys.cdb.mapper.MapperCLI;
 import com.excilys.cdb.mapper.MapperDTO;
 import com.excilys.cdb.model.*;
 import com.excilys.cdb.service.CRUD;
-import com.excilys.cdb.ui.Validation;
 
-public class Controller {
+@Controller
+public class ControllerCentral {
 	
-	private CRUD service = CRUD.getInstance();
+	@Autowired
+	private CRUD service;
+	
 	private Scanner sc;
 	private final PageComputerFactory computerFactory = new PageComputerFactory();
 	private final PageCompanyFactory companyFactory = new PageCompanyFactory();
 	private Page page;
 	
-	private ValidateDTO valDTO = ValidateDTO.getInstance();
-	private MapperDTO mapDTO = MapperDTO.getInstance();
-	private MapperCLI mapCLI = MapperCLI.getInstance();
+	@Autowired
+	private ValidateDTO valDTO;
+	@Autowired
+	private MapperDTO mapDTO;
+	@Autowired
+	private MapperCLI mapCLI;
 	
-	private Computer computer;
-	
+	private Computer computer;	
 	private Company company;
-	private int companyId;
-	private String companyName;
 	
 	private static Logger logger = LoggerFactory.getLogger(Controller.class);
 
 	
-	public Controller() {
+	public ControllerCentral() {
 		sc = new Scanner(System.in);
 	}
 	
@@ -61,22 +62,45 @@ public class Controller {
 		
 		RequestParameter parameters = mapDTO.mapParameters(pBean);		
 
-		if (type == Computer.class) {				
-			page = computerFactory.getPage(numberPage*taille, taille, numberPage);
-			page.setElements(service.pageComputer(numberPage*taille, taille, parameters));
+		if (type == PageComputer.class) {				
+			page = computerFactory.getPage(numberPage*taille, taille, numberPage, parameters);
+			fillPage();
 			Page.count = service.countComputer(parameters);
 			
-		} else if (type == Company.class) {
-			page = companyFactory.getPage(numberPage*taille, taille, numberPage);
-			page.setElements(service.pageCompany(numberPage*taille, taille, parameters));
+		} else if (type == PageCompany.class) {
+			page = companyFactory.getPage(numberPage*taille, taille, numberPage, parameters);
+			fillPage();
 			Page.count = service.countCompany(parameters);
 		}	
 
 	}
 	
+	public void fillPage() {
+		
+		if( page.getClass() == null ) {
+			logger.error("Page Class not attributed");
+		
+		} else {
+			
+			if( PageComputer.class.equals(page.getClass()) ) {
+				page.setElements(service.pageComputer(page.getPageNumber()*page.getTaille(), page.getTaille(), page.getParameters()));
+			
+			} else if ( PageCompany.class.equals(page.getClass()) ){
+				page.setElements(service.pageCompany(page.getPageNumber()*page.getTaille(), page.getTaille(), page.getParameters()));
+			
+			} else {
+				System.out.println(page.getClass());
+			}
+			
+		}
+		
+		
+	}
+	
 	public String nextPage() {
 		
 		page = page.nextPage();
+		fillPage();
 			
 		return ("Page suivante :");
 	}
@@ -84,6 +108,7 @@ public class Controller {
 	public String previousPage() {
 		
 		page = page.previousPage();
+		fillPage();
 
 		return ("Page précédente :");
 	}
@@ -172,16 +197,8 @@ public class Controller {
 		return(error);
 	}
 
- 	public void deleteList(String list) {
-		String[] computers = list.split(",");
-		int id = 0;
-		
-		for(String s:computers) {
-			
-			id = Integer.parseInt(s);
-			deleteComputer(id);
-			
-		}
+ 	public void deleteComputerList(String list) {
+		service.deleteComputerList(list);
 	}
 	
 	

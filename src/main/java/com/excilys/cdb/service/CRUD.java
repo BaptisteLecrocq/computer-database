@@ -1,23 +1,26 @@
 package com.excilys.cdb.service;
 
-import com.excilys.cdb.dao.*;
+import com.excilys.cdb.dao.DAO; 
 import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.exception.TransactionException;
-import com.excilys.cdb.mapper.Mapper;
-import com.excilys.cdb.model.*;
+import com.excilys.cdb.model.Computer;
+import com.excilys.cdb.model.Company;
+import com.excilys.cdb.model.RequestParameter;
+
+
 
 import java.util.ArrayList;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+
+@Service
 public class CRUD {
 	
-	private DAO dao = DAO.getInstance();
-	
-	//Singleton pattern	
-	private static CRUD firstCrud = new CRUD();
-	public static CRUD getInstance() {
-		return(firstCrud);
-	}
+	@Autowired
+	private DAO dao;
 	
 	public int countComputer(RequestParameter parameters) {
 		return(dao.countComputer(parameters));
@@ -59,7 +62,11 @@ public class CRUD {
 	
 	public boolean deleteComputer(int id) {
 		return(dao.deleteComputer(id));
-	}	
+	}
+	
+	public void deleteComputerList(String list) {
+		dao.deleteComputerList(list);
+	}
 	
 	public void deleteCompany(int id) throws TransactionException {
 		dao.deleteCompany(id);

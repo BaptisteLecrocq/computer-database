@@ -5,24 +5,18 @@ import java.time.format.DateTimeFormatter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import com.excilys.cdb.beans.CompanyBeanCLI;
 import com.excilys.cdb.beans.ComputerBeanCLI;
-import com.excilys.cdb.controller.Controller;
 import com.excilys.cdb.model.Company;
 import com.excilys.cdb.model.Computer;
 
+@Component
 public class MapperCLI {
 	
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	private static Logger logger = LoggerFactory.getLogger(MapperCLI.class);
-	
-	private static MapperCLI firstMapperCLI = new MapperCLI();
-	public static MapperCLI getInstance() {
-		return(firstMapperCLI);
-	}
-	
-	private MapperCLI() { };
 	
 	public Computer mapComputerCliDTOToModel( ComputerBeanCLI cBean ) {
 		

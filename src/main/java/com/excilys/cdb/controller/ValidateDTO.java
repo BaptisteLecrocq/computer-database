@@ -4,11 +4,15 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.excilys.cdb.beans.ComputerBean;
 import com.excilys.cdb.model.RequestParameter;
 import com.excilys.cdb.service.CRUD;
 import com.excilys.cdb.ui.Validation;
 
+@Component
 public class ValidateDTO {
 	
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -21,16 +25,9 @@ public class ValidateDTO {
 	private final String ERR_FORMAT_COMPANY_ID = "Wrong Company Id format";
 	private final String ERR_COMPANY = "Company does not exist";
 	
-	private CRUD service = CRUD.getInstance();
 	
-	//Singleton pattern	
-	private static ValidateDTO firstValidateDTO = new ValidateDTO();
-	public static ValidateDTO getInstance() {
-		return(firstValidateDTO);
-	}
-	
-	private ValidateDTO() { };
-	
+	@Autowired
+	private CRUD service;	
 	
 	public ArrayList<String> validateComputerBean(ComputerBean cBean) {
 		

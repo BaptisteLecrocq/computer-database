@@ -1,6 +1,6 @@
 package com.excilys.cdb.servlets;
 
-import java.io.IOException;
+import java.io.IOException; 
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.ArrayList;
@@ -13,14 +13,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.excilys.cdb.beans.CompanyBean;
 import com.excilys.cdb.beans.ComputerBean;
-import com.excilys.cdb.controller.Controller;
-import com.excilys.cdb.model.Computer;
+import com.excilys.cdb.controller.ControllerCentral;
 
 @WebServlet(name = "EditComputer", urlPatterns = "/edit")
 public class EditComputer extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
-	private Controller control = new Controller();
+	private ControllerCentral control = new ControllerCentral();
 	
 
 	public void doGet( HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{

@@ -1,6 +1,6 @@
 package com.excilys.cdb.servlets;
 
-import java.io.IOException;
+import java.io.IOException; 
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ import javax.servlet.http.HttpSession;
 
 import com.excilys.cdb.beans.ComputerBean;
 import com.excilys.cdb.beans.RequestParameterBean;
-import com.excilys.cdb.controller.Controller;
+import com.excilys.cdb.controller.ControllerCentral;
 import com.excilys.cdb.model.Computer;
 
 @WebServlet(name = "Dashboard", urlPatterns = "/app")
@@ -24,7 +24,7 @@ public class Dashboard extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
 	private static final String[] columnName = { "Computer name", "Introduced date", "Discontinued date", "Company"};
-	private Controller control = new Controller();
+	private ControllerCentral control = new ControllerCentral();
 	
 
 	//@SuppressWarnings("unused")
@@ -110,7 +110,7 @@ public class Dashboard extends HttpServlet {
 		RequestParameterBean parameters = new RequestParameterBean();
 		parameters.setSearchTerm(searchTerm);
 		parameters.setOrder(order);
-		parameters.setChoice(choice);
+		parameters.setChoice(choice+1);
 		control.initPage(Computer.class, pageSize, Integer.parseInt(request.getAttribute("pageNumber").toString()), parameters);
 		
 		page = control.pageComputerBean();
@@ -130,7 +130,7 @@ public class Dashboard extends HttpServlet {
 	public void doPost( HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
 		
 		String test = request.getParameter("selection");
-		control.deleteList(test);
+		control.deleteComputerList(test);
 		
 		this.getServletContext().getRequestDispatcher( "/WEB-INF/editComputer.jsp" ).forward( request, response );
 	}

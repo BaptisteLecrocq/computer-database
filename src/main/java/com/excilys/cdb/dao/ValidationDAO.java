@@ -1,6 +1,6 @@
 package com.excilys.cdb.dao;
 
-import java.time.LocalDate; 
+import java.time.LocalDate;  
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -9,7 +9,6 @@ import com.excilys.cdb.exception.FormatException;
 import com.excilys.cdb.exception.IdValidationException;
 import com.excilys.cdb.exception.NameValidationException;
 import com.excilys.cdb.exception.ValidationException;
-import com.excilys.cdb.service.CRUD;
 
 public class ValidationDAO {
 	
@@ -18,8 +17,6 @@ public class ValidationDAO {
 	private final String ERR_DATE_ORDER = "Discontinuation date has to be later than Introduction date";
 	private final String ERR_DATE_ABSENT = "Can't have a discontinuation date without an introduction one";
 	private final String ERR_COMPANY = "Company id does not match any Company";
-	
-	private CRUD service = CRUD.getInstance();
 	
 	public void validateComputerBeanDb(ComputerBeanDb cBean) throws ValidationException {
 		

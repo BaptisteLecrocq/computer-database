@@ -10,10 +10,14 @@ import java.sql.Statement;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import com.excilys.cdb.beans.CompanyBeanDb;
 import com.excilys.cdb.beans.ComputerBeanDb;
@@ -25,7 +29,7 @@ import com.excilys.cdb.model.Company;
 import com.excilys.cdb.model.Computer;
 import com.excilys.cdb.model.RequestParameter;
 
-
+@Repository
 public class DAO {
 	
 	private static final String getComputer = "SELECT computer.id, computer.name, computer.introduced, computer.discontinued, computer.company_id, company.name ";
@@ -35,7 +39,7 @@ public class DAO {
 	private static final String allCompanies = "FROM company ";
 	private static final String searchComputer = " WHERE computer.name LIKE ? ";
 	private static final String searchCompany = " WHERE company.name LIKE ? ";
-	private static final String page = " LIMIT ? OFFSET ?;";	
+	private static final String page = "LIMIT ? OFFSET ?;";	
 	
 	private static final String getLastComputerId = "SELECT max(id) FROM computer;";
 	private static final String getLastCompanyId = "SELECT max(id) FROM company;";
@@ -45,7 +49,8 @@ public class DAO {
 	private static final String updateComputer = "UPDATE computer SET name = ? ,introduced = ?, discontinued = ?, company_id = ? WHERE id=?";
 	private static final String deleteComputer = "DELETE FROM computer WHERE id=?";
 	private static final String deleteCompany = "DELETE FROM company WHERE id=?";
-	private static final String deleteComputers ="DELETE FROM computer WHERE company_id=?";
+	private static final String deleteComputers = "DELETE FROM computer WHERE id IN(";
+	private static final String deleteLinkedComputers ="DELETE FROM computer WHERE company_id=?";
 	
 	private static final String getComputerPage = "SELECT computer.id, computer.name, computer.introduced, computer.discontinued, computer.company_id, company.name FROM computer LEFT JOIN company ON computer.company_id = company.id ORDER BY id LIMIT ? OFFSET ? ";
 	private static final String getCompanyPage = "SELECT id,name FROM company ORDER BY id LIMIT ? OFFSET ?;";
@@ -55,25 +60,22 @@ public class DAO {
 			+"WHERE computer.name LIKE %?%";
 	
 	private static final String orderBy = "ORDER BY ";
-	private static final String[] order = { "", "ASC ", "DESC "};
-	private static final String[] column = { "computer.name ", "computer.introduced ", "computer.discontinued ", "company.name " };
-	
+	private static final String[] order = { "ASC ", "DESC "};
+	private static final String[] columnComputer = { "computer.id ", "computer.name ", "computer.introduced ", "computer.discontinued ", "company.name " };
+	private static final String[] columnCompany = { "company.id ", "company.name " };
 	
 	private static Connection con;
-	private static Database db = Database.getInstance();
-	private Mapper map = Mapper.getInstance();
-	private MapperDTOdb mapDb = MapperDTOdb.getInstance();
+	
+	@Autowired
+	private Database db;
+	@Autowired
+	private Mapper map;
+	@Autowired
+	private MapperDTOdb mapDb;
 	
 	private static Logger logger = LoggerFactory.getLogger(DAO.class);
 	
 	
-	//Singleton pattern	
-	private static DAO firstDAO = new DAO();
-	public static DAO getInstance() {
-		return (firstDAO);
-	}
-	
-	private DAO() {}
 	
 	/*            Simple Requests             */
 	
@@ -88,7 +90,8 @@ public class DAO {
 			results = Optional.ofNullable(stmt.executeQuery(query));
 			
 		} catch (SQLException e) {
-			logger.error(e.toString());
+			logger.error(e.toString());		
+			e.printStackTrace();
 		}
 		
 		return(results);	
@@ -115,7 +118,7 @@ public class DAO {
 
 	public ArrayList<Computer> listAllComputer(RequestParameter parameters){
 		
-		Optional<ResultSet> results = simpleRequest(getComputer+allComputers+column[parameters.getChoice()]+order[parameters.getOrder()]+";");
+		Optional<ResultSet> results = simpleRequest(getComputer+allComputers+columnComputer[parameters.getChoice()]+order[parameters.getOrder()]+";");
 		ArrayList<Computer> listComputer = new ArrayList<Computer>();
 		
 		try {
@@ -130,7 +133,7 @@ public class DAO {
 	
 	public ArrayList<Company> listAllCompany(RequestParameter parameters){
 		
-		Optional<ResultSet> results = simpleRequest(getCompany+allCompanies+column[parameters.getChoice()]+order[parameters.getOrder()]+";");
+		Optional<ResultSet> results = simpleRequest(getCompany+allCompanies+columnCompany[parameters.getChoice()]+order[parameters.getOrder()]+";");
 		ArrayList<Company> listCompany = new ArrayList<Company>();
 		
 		try {
@@ -272,7 +275,7 @@ public class DAO {
 				ps.setDate(3, Date.valueOf(end.get()));
 			}
 			
-			int results = ps.executeUpdate();
+			ps.executeUpdate();
 			return true;
 			
 		} catch(SQLException e){
@@ -287,7 +290,7 @@ public class DAO {
 		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(deleteComputer) ) {
 					
 			ps.setInt(1,id);
-			int results = ps.executeUpdate();
+			ps.executeUpdate();
 			
 			return true;
 			
@@ -300,7 +303,7 @@ public class DAO {
 	public void deleteCompany(int id) throws TransactionException {
 		
 		try ( Connection con = db.getConnection(); 
-				PreparedStatement ps = con.prepareStatement(deleteComputers); 
+				PreparedStatement ps = con.prepareStatement(deleteLinkedComputers); 
 				PreparedStatement ps2 = con.prepareStatement(deleteCompany) ){
 			
 			con.setAutoCommit(false);
@@ -329,6 +332,37 @@ public class DAO {
 		
 	}
 	
+	public void deleteComputerList(String list) {
+		
+		String[] buffer = list.split(",");
+		String query = deleteComputers;
+		ArrayList<Integer> values = new ArrayList<Integer>();
+
+		values.add(Integer.parseInt(buffer[0]));
+		
+		for(int i=1; i<buffer.length; i++) {
+			
+			query+="?,";
+			values.add(Integer.parseInt(buffer[i]));
+			
+		}
+		query+="?)";
+		
+		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
+			
+			for(int i = 0; i < values.size(); i++) {
+				ps.setInt(i, (int) values.get(i));
+			}
+			
+			ps.executeUpdate();
+		
+			
+		} catch (SQLException e) {
+			logger.error(e.toString());
+			e.printStackTrace();
+		}
+		
+	}
 	
 	/*            Page Requests             */	
 
@@ -337,7 +371,7 @@ public class DAO {
 		Optional<ResultSet> results = Optional.empty();
 		ArrayList<Computer> pageComputer = new ArrayList<Computer>();
 		
-		String query = getComputer+allComputers+orderBy+column[parameters.getChoice()]+order[parameters.getOrder()]+page;
+		String query = getComputer+allComputers+orderBy+columnComputer[parameters.getChoice()]+order[parameters.getOrder()]+page;
 		System.out.println(query);
 		
 		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
@@ -349,6 +383,7 @@ public class DAO {
 					
 		} catch (SQLException e) {
 			logger.error(e.toString());
+			e.printStackTrace();
 			
 		} catch (NotFoundException e) {
 			logger.info(e.toString());
@@ -362,7 +397,7 @@ public class DAO {
 		Optional<ResultSet> results = Optional.empty();
 		ArrayList<Company> pageCompany = new ArrayList<Company>();
 		
-		String query = getCompany+allCompanies+orderBy+column[parameters.getChoice()]+order[parameters.getOrder()]+page;
+		String query = getCompany+allCompanies+orderBy+columnCompany[parameters.getChoice()]+order[parameters.getOrder()]+page;
 		
 		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
 			
@@ -373,6 +408,7 @@ public class DAO {
 					
 		} catch (SQLException e) {
 			logger.error(e.toString());
+			e.printStackTrace();
 			
 		} catch (NotFoundException e) {
 			logger.info(e.toString());
@@ -502,7 +538,7 @@ public class DAO {
 			Optional<ResultSet> results = Optional.empty();
 			ArrayList<Computer> searchResult = new ArrayList<Computer>();
 			
-			String query = getComputer+allComputers+searchComputer+orderBy+column[parameters.getChoice()]+order[parameters.getOrder()]+page;
+			String query = getComputer+allComputers+searchComputer+orderBy+columnComputer[parameters.getChoice()]+order[parameters.getOrder()]+page;
 			
 			try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
 				
@@ -535,7 +571,7 @@ public class DAO {
 			Optional<ResultSet> results = Optional.empty();
 			ArrayList<Company> searchResult = new ArrayList<Company>();
 			
-			String query = getCompany+allCompanies+searchCompany+orderBy+column[parameters.getChoice()]+order[parameters.getOrder()]+page;
+			String query = getCompany+allCompanies+searchCompany+orderBy+columnCompany[parameters.getChoice()]+order[parameters.getOrder()]+page;
 
 			
 			try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
@@ -561,11 +597,11 @@ public class DAO {
 	
 	/*            Utility             */	
 	
- 	public static Connection getCon() {
+ 	public Connection getCon() {
 		return con;
 	}	
 
-	public static Database getDb() {
+	public Database getDb() {
 		return db;
 	}
 	

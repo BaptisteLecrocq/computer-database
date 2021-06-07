@@ -15,6 +15,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.excilys.main;
 import com.excilys.cdb.beans.RequestParameterBean;
@@ -26,10 +27,11 @@ import com.excilys.cdb.model.RequestParameter;
 public class DAOTest {
 	
 	private static Logger logger = LoggerFactory.getLogger(main.class);
-	private static DAO daotest = DAO.getInstance();
+	@Autowired
+	private static DAO daotest;
 	
-	private Connection con = DAO.getCon();
-	private Database db = DAO.getDb();
+	private Connection con = daotest.getCon();
+	private Database db = daotest.getDb();
     
     @BeforeClass
     public static void testConnection() {

@@ -2,9 +2,20 @@ package com.excilys.cdb.model;
 
 public class RequestParameter {
 
-	private String searchTerm;
-	private int order;
-	private int choice;
+	private String searchTerm = "";
+	private int order = 1;
+	private int choice = 1;
+	
+	public RequestParameter() {}
+	
+	public RequestParameter(String searchTerm, int order, int choice) {
+		
+		this.searchTerm = searchTerm;
+		this.order = order;
+		this.choice = choice;
+		
+	}
+	
 	public String getSearchTerm() {
 		return searchTerm;
 	}
