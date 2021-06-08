@@ -25,10 +25,10 @@ public class Database {
 	private static String password;
 	private static String driver;
 	
-	/*
+	
 	private static HikariConfig config;
 	private static HikariDataSource ds;
-	*/
+	
 	
 	
 	
@@ -64,7 +64,7 @@ public class Database {
 		} catch (IOException e) {
 			logger.debug(e.toString());
 		}
-		/*
+		
 		config = new HikariConfig();
 		config.setDriverClassName(driver);
 		config.setJdbcUrl(url);
@@ -74,21 +74,21 @@ public class Database {
         config.addDataSourceProperty( "prepStmtCacheSize" , "250" );
         config.addDataSourceProperty( "prepStmtCacheSqlLimit" , "2048" );
         ds = new HikariDataSource(config);
-        */
+        
 	}
 	
 	public Connection getConnection() throws SQLException {
-		//return ds.getConnection();
-		return(DriverManager.getConnection(url,username,password));
+		return ds.getConnection();
+		//return(DriverManager.getConnection(url,username,password));
 	}
 	
 	
 	public void close() {
-		/*
+		
       if (!ds.isClosed()) {
           ds.close();
       }
-      */
+      
 	}
 	
 	

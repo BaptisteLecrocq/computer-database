@@ -9,22 +9,26 @@ import org.springframework.context.annotation.Configuration;
 
 import com.excilys.cdb.ui.CLI;
 
-
+@Configuration
+@ComponentScan( basePackages = { "com.excilys.cdb.controller", 
+									"com.excilys.cdb.service", 
+									"com.excilys.cdb.dao", 
+									"com.excilys.cdb.mapper", 
+									"com.excilys.cdb.dao",
+									"com.excilys.cdb.servlets",
+									"com.excilys.cdb.ui",
+									"com.excilys.cdb.validator"} )
+//@PropertySource( "chemin vers le fichier de config des propriétés" )
 public class Main {
 
 	private static CLI test;	
 	
 	public final static void main(String[] args) {
-		// assume SLF4J is bound to logback in the current environment
-		//LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-		// print logback's internal status
-		//StatusPrinter.print(lc);
-
 		
 		Logger logger = LoggerFactory.getLogger(Main.class);
 		logger.debug("Coucou");
 		
-		ApplicationContext context = new AnnotationConfigApplicationContext(SpringConfig.class);
+		ApplicationContext context = new AnnotationConfigApplicationContext(Main.class);
 		test = context.getBean(CLI.class);
 		test.init();
 		

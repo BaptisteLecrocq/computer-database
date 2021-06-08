@@ -21,12 +21,14 @@ import org.springframework.stereotype.Repository;
 
 import com.excilys.cdb.beans.CompanyBeanDb;
 import com.excilys.cdb.beans.ComputerBeanDb;
+import com.excilys.cdb.beans.RequestParameterBeanDb;
 import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.exception.TransactionException;
 import com.excilys.cdb.mapper.Mapper;
 import com.excilys.cdb.mapper.MapperDTOdb;
 import com.excilys.cdb.model.Company;
 import com.excilys.cdb.model.Computer;
+import com.excilys.cdb.model.Page;
 import com.excilys.cdb.model.RequestParameter;
 
 @Repository
@@ -34,12 +36,13 @@ public class DAO {
 	
 	private static final String getComputer = "SELECT computer.id, computer.name, computer.introduced, computer.discontinued, computer.company_id, company.name ";
 	private static final String getCompany = "SELECT id, name ";
-	private static final String doCount = "SELECT COUNT(computer.id) ";
+	private static final String countComputer = "SELECT COUNT(computer.id) ";
+	private static final String countCompany = "SELECT COUNT(company.id) ";
 	private static final String allComputers = "FROM computer LEFT JOIN company ON computer.company_id = company.id ";
 	private static final String allCompanies = "FROM company ";
 	private static final String searchComputer = " WHERE computer.name LIKE ? ";
 	private static final String searchCompany = " WHERE company.name LIKE ? ";
-	private static final String page = "LIMIT ? OFFSET ?;";	
+	private static final String pageModel = "LIMIT ? OFFSET ?;";	
 	
 	private static final String getLastComputerId = "SELECT max(id) FROM computer;";
 	private static final String getLastCompanyId = "SELECT max(id) FROM company;";
@@ -51,13 +54,6 @@ public class DAO {
 	private static final String deleteCompany = "DELETE FROM company WHERE id=?";
 	private static final String deleteComputers = "DELETE FROM computer WHERE id IN(";
 	private static final String deleteLinkedComputers ="DELETE FROM computer WHERE company_id=?";
-	
-	private static final String getComputerPage = "SELECT computer.id, computer.name, computer.introduced, computer.discontinued, computer.company_id, company.name FROM computer LEFT JOIN company ON computer.company_id = company.id ORDER BY id LIMIT ? OFFSET ? ";
-	private static final String getCompanyPage = "SELECT id,name FROM company ORDER BY id LIMIT ? OFFSET ?;";
-	
-	private static final String searchComputerList = "SELECT computer.id, computer.name, computer.introduced, computer.discontinued, computer.company_id, company.name \n"
-			+"FROM computer LEFT JOIN company ON computer.company_id = company.id \n"
-			+"WHERE computer.name LIKE %?%";
 	
 	private static final String orderBy = "ORDER BY ";
 	private static final String[] order = { "ASC ", "DESC "};
@@ -96,54 +92,6 @@ public class DAO {
 		
 		return(results);	
 		
-	}
-	
-	public int countAllComputer() {
-		
-		Optional<ResultSet> results = simpleRequest(doCount+allComputers);
-		int count = map.countComputer(results);
-		
-		close();
-		return(count);
-	}
-	
-	public int countAllCompany() {
-		
-		Optional<ResultSet> results = simpleRequest(doCount+allCompanies);
-		int count = map.countCompany(results);
-		
-		close();
-		return(count);
-	}
-
-	public ArrayList<Computer> listAllComputer(RequestParameter parameters){
-		
-		Optional<ResultSet> results = simpleRequest(getComputer+allComputers+columnComputer[parameters.getChoice()]+order[parameters.getOrder()]+";");
-		ArrayList<Computer> listComputer = new ArrayList<Computer>();
-		
-		try {
-			 listComputer = map.mapComputerList(results);
-		} catch (NotFoundException e) {
-			logger.info(e.toString());
-		}
-		
-		close();
-		return(listComputer);
-	}
-	
-	public ArrayList<Company> listAllCompany(RequestParameter parameters){
-		
-		Optional<ResultSet> results = simpleRequest(getCompany+allCompanies+columnCompany[parameters.getChoice()]+order[parameters.getOrder()]+";");
-		ArrayList<Company> listCompany = new ArrayList<Company>();
-		
-		try {
-			listCompany = map.mapCompanyList(results);
-		} catch (NotFoundException e) {
-			logger.info(e.toString());
-		}
-		
-		close();
-		return(listCompany);
 	}
 
 	public int getLastComputerId() {
@@ -206,7 +154,7 @@ public class DAO {
 	
 	public void addCompany(Company company) {
 		
-		CompanyBeanDb cBean = mapDb.mapCompanyModeltoDTOdb(company);
+		CompanyBeanDb cBean = mapDb.mapCompanyModelToDTOdb(company);
 		
 		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(addCompany) ){
 			
@@ -302,33 +250,39 @@ public class DAO {
 	
 	public void deleteCompany(int id) throws TransactionException {
 		
-		try ( Connection con = db.getConnection(); 
-				PreparedStatement ps = con.prepareStatement(deleteLinkedComputers); 
-				PreparedStatement ps2 = con.prepareStatement(deleteCompany) ){
-			
-			con.setAutoCommit(false);
-			
-			ps.setInt(1, id);
-			ps.executeUpdate();
-			ps2.setInt(1, id);
-			ps2.executeUpdate();
-			
-			con.commit();
-			
-		} catch (SQLException e) {
-			logger.error(e.toString());
-			e.printStackTrace();
-			
-			try {
-				con.rollback();
+		try ( Connection con = db.getConnection() ){		
+		
+			try (	PreparedStatement ps = con.prepareStatement(deleteLinkedComputers); 
+					PreparedStatement ps2 = con.prepareStatement(deleteCompany) ){
 				
-			} catch (SQLException e1) {
-				logger.info(e1.toString());
-				e1.printStackTrace();
-				throw new TransactionException("Delete Company Transaction failed");
+				con.setAutoCommit(false);
+				
+				ps.setInt(1, id);
+				ps.executeUpdate();
+				ps2.setInt(1, id);
+				ps2.executeUpdate();
+				
+				con.commit();
+				
+			} catch (SQLException e) {
+				logger.error(e.toString());
+				e.printStackTrace();
+				
+				try {
+					con.rollback();
+					
+				} catch (SQLException e1) {
+					logger.info(e1.toString());
+					e1.printStackTrace();
+					throw new TransactionException("Delete Company Transaction failed");
+				}
+				
 			}
 			
-		} 
+		} catch (SQLException e2) {
+			logger.error(e2.toString());
+			e2.printStackTrace();
+		}
 		
 	}
 	
@@ -364,238 +318,152 @@ public class DAO {
 		
 	}
 	
-	/*            Page Requests             */	
-
-	public ArrayList<Computer> pageAllComputer (int start, int taille, RequestParameter parameters){
-		
-		Optional<ResultSet> results = Optional.empty();
-		ArrayList<Computer> pageComputer = new ArrayList<Computer>();
-		
-		String query = getComputer+allComputers+orderBy+columnComputer[parameters.getChoice()]+order[parameters.getOrder()]+page;
-		System.out.println(query);
-		
-		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
-		
-			ps.setInt(1, taille);
-			ps.setInt(2, start);
-			results = Optional.ofNullable(ps.executeQuery());
-			pageComputer = map.mapComputerList(results);
-					
-		} catch (SQLException e) {
-			logger.error(e.toString());
-			e.printStackTrace();
-			
-		} catch (NotFoundException e) {
-			logger.info(e.toString());
-		}
-		
-		return(pageComputer);
-	}
-	
-	public ArrayList<Company> pageAllCompany (int start, int taille, RequestParameter parameters){
-		
-		Optional<ResultSet> results = Optional.empty();
-		ArrayList<Company> pageCompany = new ArrayList<Company>();
-		
-		String query = getCompany+allCompanies+orderBy+columnCompany[parameters.getChoice()]+order[parameters.getOrder()]+page;
-		
-		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
-			
-			ps.setInt(1, taille);
-			ps.setInt(2, start);
-			results = Optional.ofNullable(ps.executeQuery());
-			pageCompany = map.mapCompanyList(results);
-					
-		} catch (SQLException e) {
-			logger.error(e.toString());
-			e.printStackTrace();
-			
-		} catch (NotFoundException e) {
-			logger.info(e.toString());
-		}
-		
-		return(pageCompany);
-	}
-
 	
 	/*            Composed Requests             */	
 	
 	public ArrayList<Computer> listComputer(RequestParameter parameters){
+			
+		Optional<ResultSet> results = Optional.empty();
+		ArrayList<Computer> searchResult = new ArrayList<Computer>();
 		
-		if( parameters.getSearchTerm() == null) {
-			return(listAllComputer(parameters));
+		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(getComputer+allComputers+searchComputer+";") ) {
+			
+			ps.setString(1, "%"+parameters.getSearchTerm()+"%");
+			results = Optional.ofNullable(ps.executeQuery());
+			searchResult = map.mapComputerList(results);
+			
+			
+		} catch (SQLException e) {
+			logger.error(e.toString());
+			e.printStackTrace();
+			
+		} catch (NotFoundException e) {
+			logger.info(e.toString());
+		}
 		
-		} else {
-			
-			Optional<ResultSet> results = Optional.empty();
-			ArrayList<Computer> searchResult = new ArrayList<Computer>();
-			
-			try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(getComputer+allComputers+searchComputer+";") ) {
-				
-				ps.setString(1, "%"+parameters.getSearchTerm()+"%");
-				results = Optional.ofNullable(ps.executeQuery());
-				searchResult = map.mapComputerList(results);
-				
-				
-			} catch (SQLException e) {
-				logger.error(e.toString());
-				e.printStackTrace();
-				
-			} catch (NotFoundException e) {
-				logger.info(e.toString());
-			}
-			
-			return(searchResult);
-		}		
-	}
+		return(searchResult);
+	}		
 	
 	public ArrayList<Company> listCompany(RequestParameter parameters){
+			
+		Optional<ResultSet> results = Optional.empty();
+		ArrayList<Company> searchResult = new ArrayList<Company>();
 		
-		if( parameters.getSearchTerm() == null) {
-			return(listAllCompany(parameters));
+		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(getCompany+allCompanies+searchCompany+";") ) {
+			
+			ps.setString(1, "%"+parameters.getSearchTerm()+"%");
+			results = Optional.ofNullable(ps.executeQuery());
+			searchResult = map.mapCompanyList(results);
+			
+			
+		} catch (SQLException e) {
+			logger.error(e.toString());
+			e.printStackTrace();
+			
+		} catch (NotFoundException e) {
+			logger.info(e.toString());
+		}
 		
-		} else {
-			
-			Optional<ResultSet> results = Optional.empty();
-			ArrayList<Company> searchResult = new ArrayList<Company>();
-			
-			try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(getCompany+allCompanies+searchCompany+";") ) {
-				
-				ps.setString(1, "%"+parameters.getSearchTerm()+"%");
-				results = Optional.ofNullable(ps.executeQuery());
-				searchResult = map.mapCompanyList(results);
-				
-				
-			} catch (SQLException e) {
-				logger.error(e.toString());
-				e.printStackTrace();
-				
-			} catch (NotFoundException e) {
-				logger.info(e.toString());
-			}
-			
-			return(searchResult);
-		}		
-	}
+		return(searchResult);
+	}		
+
 	
 	public int countComputer(RequestParameter parameters) {
+			
+		Optional<ResultSet> results = Optional.empty();
+		int count = 0;
 		
-		if( parameters.getSearchTerm() == null ) {
-			return(countAllComputer());
+		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(countComputer+allComputers+searchComputer+";") ) {
+			
+			ps.setString(1, "%"+parameters.getSearchTerm()+"%");
+			results = Optional.ofNullable(ps.executeQuery());
+			count = map.countComputer(results);
+					
+		} catch (SQLException e) {
+			logger.error(e.toString());
+			e.printStackTrace();
 		}
-		else {
-			
-			Optional<ResultSet> results = Optional.empty();
-			int count = 0;
-			
-			try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(doCount+allComputers+searchComputer+";") ) {
-				
-				ps.setString(1, "%"+parameters.getSearchTerm()+"%");
-				results = Optional.ofNullable(ps.executeQuery());
-				count = map.countComputer(results);
-						
-			} catch (SQLException e) {
-				logger.error(e.toString());
-				e.printStackTrace();
-			}
-						
-			return(count);
-		}			
-	}
+					
+		return(count);
+	}			
 	
 	public int countCompany(RequestParameter parameters) {
+			
+		Optional<ResultSet> results = Optional.empty();
+		int count = 0;
 		
-		if(parameters.getSearchTerm() == null) {
-			return(countAllCompany());
+		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(countCompany+allCompanies+searchCompany+";") ) {
+			
+			ps.setString(1, "%"+parameters.getSearchTerm()+"%");
+			results = Optional.ofNullable(ps.executeQuery());
+			count = map.countCompany(results);
+					
+		} catch (SQLException e) {
+			logger.error(e.toString());
+			e.printStackTrace();
 		}
-		else {
-			
-			Optional<ResultSet> results = Optional.empty();
-			int count = 0;
-			
-			try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(doCount+allCompanies+searchCompany+";") ) {
-				
-				ps.setString(1, "%"+parameters.getSearchTerm()+"%");
-				results = Optional.ofNullable(ps.executeQuery());
-				count = map.countCompany(results);
-						
-			} catch (SQLException e) {
-				logger.error(e.toString());
-				e.printStackTrace();
-			}
-						
-			return(count);
-		}			
-	}
+					
+		return(count);
+	}			
 	
-	public ArrayList<Computer> pageComputer(int start, int taille, RequestParameter parameters){
+	public ArrayList<Computer> pageComputer(Page page){
 		
-		if( parameters.getSearchTerm() == null) {
-			return(pageAllComputer(start, taille, parameters));
+		Optional<ResultSet> results = Optional.empty();
+		ArrayList<Computer> searchResult = new ArrayList<Computer>(); 
+		RequestParameterBeanDb parameters = mapDb.mapParametersToDTOdb(page.getParameters());
 		
-		} else {
+		String query = getComputer+allComputers+searchComputer+orderBy+columnComputer[parameters.getChoice()]+order[parameters.getOrder()]+pageModel;
+		
+		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
 			
-			Optional<ResultSet> results = Optional.empty();
-			ArrayList<Computer> searchResult = new ArrayList<Computer>();
+			ps.setString(1, "%"+parameters.getSearchTerm()+"%");
+			ps.setInt(2, page.getTaille());
+			ps.setInt(3, page.getStart());
+			results = Optional.ofNullable(ps.executeQuery());
+			searchResult = map.mapComputerList(results);
 			
-			String query = getComputer+allComputers+searchComputer+orderBy+columnComputer[parameters.getChoice()]+order[parameters.getOrder()]+page;
 			
-			try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
-				
-				ps.setString(1, "%"+parameters.getSearchTerm()+"%");
-				ps.setInt(2, taille);
-				ps.setInt(3, start);
-				results = Optional.ofNullable(ps.executeQuery());
-				searchResult = map.mapComputerList(results);
-				
-				
-			} catch (SQLException e) {
-				logger.error(e.toString());
-				e.printStackTrace();
-				
-			} catch (NotFoundException e) {
-				logger.info(e.toString());
-			}
+		} catch (SQLException e) {
+			logger.error(e.toString());
+			e.printStackTrace();
 			
-			return(searchResult);
-		}		
-	}
+		} catch (NotFoundException e) {
+			logger.info(e.toString());
+		}
+		
+		return(searchResult);
+	}		
 	
-	public ArrayList<Company> pageCompany(int start, int taille, RequestParameter parameters){
-		
-		if( parameters.getSearchTerm() == null) {
-			return(pageAllCompany(start, taille, parameters));
-		
-		} else {
+	public ArrayList<Company> pageCompany(Page page){
 			
-			Optional<ResultSet> results = Optional.empty();
-			ArrayList<Company> searchResult = new ArrayList<Company>();
-			
-			String query = getCompany+allCompanies+searchCompany+orderBy+columnCompany[parameters.getChoice()]+order[parameters.getOrder()]+page;
+		Optional<ResultSet> results = Optional.empty();
+		ArrayList<Company> searchResult = new ArrayList<Company>();
+		RequestParameterBeanDb parameters = mapDb.mapParametersToDTOdb(page.getParameters());
+		
+		String query = getCompany+allCompanies+searchCompany+orderBy+columnCompany[parameters.getChoice()]+order[parameters.getOrder()]+pageModel;
 
+		
+		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
 			
-			try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
-				
-				ps.setString(1, "%"+parameters.getSearchTerm()+"%");
-				ps.setInt(2, taille);
-				ps.setInt(2, start);
-				results = Optional.ofNullable(ps.executeQuery());
-				searchResult = map.mapCompanyList(results);
-				
-				
-			} catch (SQLException e) {
-				logger.error(e.toString());
-				e.printStackTrace();
-				
-			} catch (NotFoundException e) {
-				logger.info(e.toString());
-			}
+			ps.setString(1, "%"+parameters.getSearchTerm()+"%");
+			ps.setInt(2, page.getTaille());
+			ps.setInt(3, page.getStart());
+			results = Optional.ofNullable(ps.executeQuery());
+			searchResult = map.mapCompanyList(results);
 			
-			return(searchResult);
-		}		
-	}
+			
+		} catch (SQLException e) {
+			logger.error(e.toString());
+			e.printStackTrace();
+			
+		} catch (NotFoundException e) {
+			logger.info(e.toString());
+		}
+		
+		return(searchResult);
+	}		
 	
-	/*            Utility             */	
+	/*            Utility             */
 	
  	public Connection getCon() {
 		return con;

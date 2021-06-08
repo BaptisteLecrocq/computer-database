@@ -13,13 +13,13 @@ import javax.servlet.http.HttpServletResponse;
 import com.excilys.cdb.beans.CompanyBean;
 import com.excilys.cdb.beans.ComputerBean;
 import com.excilys.cdb.controller.ControllerCentral;
-import com.excilys.cdb.model.Company;
 
 @WebServlet(name = "AddComputer", urlPatterns = "/add")
 public class AddComputer extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
 	private ControllerCentral control = new ControllerCentral();
+	
 
 	public void doGet( HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
 		
@@ -34,15 +34,15 @@ public class AddComputer extends HttpServlet {
 	
 	public void doPost( HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
 		
-		boolean validationFront = false;
+		boolean validationFront = true;
 		
 		String buffer = request.getParameter("validationFront");
 		if(buffer == null) {
-			System.out.println("Validation attribute null");
+			System.out.println("Validation attribute : null");
 		}
 		else {
 			
-			System.out.println(buffer);
+			System.out.println("Validation attribute : "+buffer);
 			validationFront = Boolean.parseBoolean(buffer);
 			
 		}

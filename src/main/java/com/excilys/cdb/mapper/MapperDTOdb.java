@@ -9,10 +9,12 @@ import org.springframework.stereotype.Component;
 
 import com.excilys.cdb.beans.CompanyBeanDb;
 import com.excilys.cdb.beans.ComputerBeanDb;
-import com.excilys.cdb.dao.ValidationDAO;
+import com.excilys.cdb.beans.RequestParameterBeanDb;
 import com.excilys.cdb.exception.ValidationException;
 import com.excilys.cdb.model.Company;
 import com.excilys.cdb.model.Computer;
+import com.excilys.cdb.model.RequestParameter;
+import com.excilys.cdb.validator.ValidationDAO;
 
 
 @Component
@@ -57,7 +59,7 @@ public class MapperDTOdb {
 		return(cBean);
 	}
 	
-	public CompanyBeanDb mapCompanyModeltoDTOdb( Company company) {
+	public CompanyBeanDb mapCompanyModelToDTOdb( Company company) {
 		
 		//valDao.validateCompany( company );
 		CompanyBeanDb cBean = new CompanyBeanDb();
@@ -66,6 +68,19 @@ public class MapperDTOdb {
 		cBean.setName(company.getName());
 		
 		return(cBean);
+		
+	}
+	
+	public RequestParameterBeanDb mapParametersToDTOdb( RequestParameter parameters) {
+		
+		//valDao.validateParameters ( parameters );
+		RequestParameterBeanDb rBean = new RequestParameterBeanDb();
+		
+		rBean.setSearchTerm(parameters.getSearchTerm());
+		rBean.setOrder(parameters.getOrder());
+		rBean.setChoice(parameters.getChoice());
+		
+		return(rBean);
 		
 	}
 	

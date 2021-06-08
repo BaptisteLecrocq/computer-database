@@ -2,7 +2,6 @@ package com.excilys.cdb.controller;
 
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.Scanner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +17,16 @@ import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.exception.TransactionException;
 import com.excilys.cdb.mapper.MapperCLI;
 import com.excilys.cdb.mapper.MapperDTO;
-import com.excilys.cdb.model.*;
+import com.excilys.cdb.model.Computer;
+import com.excilys.cdb.model.Company;
+import com.excilys.cdb.model.Page;
+import com.excilys.cdb.model.PageComputer;
+import com.excilys.cdb.model.PageCompany;
+import com.excilys.cdb.model.PageComputerFactory;
+import com.excilys.cdb.model.PageCompanyFactory;
+import com.excilys.cdb.model.RequestParameter;
 import com.excilys.cdb.service.CRUD;
+import com.excilys.cdb.validator.ValidationDTO;
 
 @Controller
 public class ControllerCentral {
@@ -27,13 +34,12 @@ public class ControllerCentral {
 	@Autowired
 	private CRUD service;
 	
-	private Scanner sc;
 	private final PageComputerFactory computerFactory = new PageComputerFactory();
 	private final PageCompanyFactory companyFactory = new PageCompanyFactory();
 	private Page page;
 	
 	@Autowired
-	private ValidateDTO valDTO;
+	private ValidationDTO valDTO;
 	@Autowired
 	private MapperDTO mapDTO;
 	@Autowired
@@ -44,10 +50,6 @@ public class ControllerCentral {
 	
 	private static Logger logger = LoggerFactory.getLogger(Controller.class);
 
-	
-	public ControllerCentral() {
-		sc = new Scanner(System.in);
-	}
 	
 	/*              Page Management                */
 
@@ -83,10 +85,10 @@ public class ControllerCentral {
 		} else {
 			
 			if( PageComputer.class.equals(page.getClass()) ) {
-				page.setElements(service.pageComputer(page.getPageNumber()*page.getTaille(), page.getTaille(), page.getParameters()));
+				page.setElements(service.pageComputer(page));
 			
 			} else if ( PageCompany.class.equals(page.getClass()) ){
-				page.setElements(service.pageCompany(page.getPageNumber()*page.getTaille(), page.getTaille(), page.getParameters()));
+				page.setElements(service.pageCompany(page));
 			
 			} else {
 				System.out.println(page.getClass());
@@ -280,28 +282,19 @@ public class ControllerCentral {
 	
 	
 
-	/*         CLI Computer Management         */
+	/*          Utility            */
 	
  	public void setComputerCLI( ComputerBeanCLI cBean ) {
  		this.computer = mapCLI.mapComputerCliDTOToModel(cBean);
  	}
-	
- 
- 	/*         CLI Company Management         */
- 	
- 	
+
  	public void setCompanyCLI( CompanyBeanCLI cBean ) {
  		this.company = mapCLI.mapCompanyCliDTOToModel(cBean);
  	}
- 	
- 	/*          Utility            */
-	
+
 	public void setComputer(Computer c) {
 		this.computer = c;
 	}
 
-	public void close() {
-		sc.close();
-	}
 
 }

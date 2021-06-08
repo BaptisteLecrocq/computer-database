@@ -9,13 +9,18 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.model.*;
+import com.excilys.cdb.validator.ValidationDAO;
 
 @Component
 public class Mapper {
+	
+	@Autowired
+	private static ValidationDAO val;
 	
 	private static Logger logger = LoggerFactory.getLogger(Mapper.class);
 
@@ -23,19 +28,19 @@ public class Mapper {
 		
 		int i = 0;
 		
-		if(results.isPresent()) {
-			try {
-				results.get().next();
-				i = results.get().getInt(1);
-				
-			} catch (SQLException e) {
-				logger.error(e.toString());
-			}
-		}
-		else {
-			logger.error("No Computer Found");
-		}
+		try {
+			val.validateFound(results);
+			results.get().next();
+			i = results.get().getInt(1);
 		
+		} catch (NotFoundException e){
+			logger.info(e.getMessage());
+			e.printStackTrace();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+				
 		return(i);
 	}
 	
@@ -43,17 +48,17 @@ public class Mapper {
 
 		int i = 0;
 		
-		if(results.isPresent()) {
-			try {
-				results.get().next();
-				i = results.get().getInt(1);
-				
-			} catch (SQLException e) {
-				logger.error(e.toString());
-			}
-		}
-		else {
-			logger.error("No Company found");
+		try {
+			val.validateFound(results);
+			results.get().next();
+			i = results.get().getInt(1);
+		
+		} catch (NotFoundException e){
+			logger.info(e.getMessage());
+			e.printStackTrace();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 		
 		return(i);

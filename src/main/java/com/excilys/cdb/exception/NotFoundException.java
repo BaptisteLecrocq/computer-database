@@ -8,5 +8,10 @@ public class NotFoundException extends Exception{
 		super(message);
 	}
 
+	
+	public NotFoundException(String message, Exception e) {
+		super(message, e);
+	}
+
 
 }

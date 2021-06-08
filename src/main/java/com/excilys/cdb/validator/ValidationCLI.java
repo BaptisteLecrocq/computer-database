@@ -1,4 +1,4 @@
-package com.excilys.cdb.ui;
+package com.excilys.cdb.validator;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -12,10 +12,10 @@ import org.springframework.stereotype.Component;
 import com.excilys.cdb.service.CRUD;
 
 @Component
-public class Validation {
+public class ValidationCLI {
 		
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-	private static Logger logger = LoggerFactory.getLogger(Validation.class);
+	private static Logger logger = LoggerFactory.getLogger(ValidationCLI.class);
 	
 	@Autowired
 	private CRUD service; 

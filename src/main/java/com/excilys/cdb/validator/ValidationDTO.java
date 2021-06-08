@@ -1,6 +1,6 @@
-package com.excilys.cdb.controller;
+package com.excilys.cdb.validator;
 
-import java.time.LocalDate;
+import java.time.LocalDate; 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
@@ -10,20 +10,19 @@ import org.springframework.stereotype.Component;
 import com.excilys.cdb.beans.ComputerBean;
 import com.excilys.cdb.model.RequestParameter;
 import com.excilys.cdb.service.CRUD;
-import com.excilys.cdb.ui.Validation;
 
 @Component
-public class ValidateDTO {
+public class ValidationDTO {
 	
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	
-	private final String ERR_NAME = "Name can't be null";
-	private final String ERR_DATE_ORDER = "Discontinuation date has to be later than Introduction date";
-	private final String ERR_DATE_ABSENT = "Can't have a discontinuation date without an introduction one";
-	private final String ERR_FORMAT_INTRODUCED = "Wrong Introduction date format";
-	private final String ERR_FORMAT_DISCONTINUED = "Wrong Discontinuation date format";
-	private final String ERR_FORMAT_COMPANY_ID = "Wrong Company Id format";
-	private final String ERR_COMPANY = "Company does not exist";
+	private static final String ERR_NAME = "Name can't be null";
+	private static final String ERR_DATE_ORDER = "Discontinuation date has to be later than Introduction date";
+	private static final String ERR_DATE_ABSENT = "Can't have a discontinuation date without an introduction one";
+	private static final String ERR_FORMAT_INTRODUCED = "Wrong Introduction date format";
+	private static final String ERR_FORMAT_DISCONTINUED = "Wrong Discontinuation date format";
+	private static final String ERR_FORMAT_COMPANY_ID = "Wrong Company Id format";
+	private static final String ERR_COMPANY = "Company does not exist";
 	
 	
 	@Autowired

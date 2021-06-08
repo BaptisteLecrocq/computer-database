@@ -41,5 +41,10 @@ public class ComputerBean {
 		this.company = company;
 	}
 	
+	@Override
+	public String toString() {
+		return("Id : "+id+", Name : "+name+", Introduced : "+introduced+", Discontinued : "+discontinued+", Company : "+company);
+	}
+	
 
 }

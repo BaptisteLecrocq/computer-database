@@ -4,7 +4,7 @@ package com.excilys.cdb.beans;
 public class CompanyBean {
 	
 	private int id;
-	private String name;	
+	private String name;
 	
 	public int getId() {
 		return id;
@@ -17,6 +17,11 @@ public class CompanyBean {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	@Override
+	public String toString() {
+		return("Id : "+id+", Name : "+name);
 	}
 
 }

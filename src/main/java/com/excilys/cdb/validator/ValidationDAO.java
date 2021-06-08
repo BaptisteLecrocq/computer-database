@@ -1,22 +1,34 @@
-package com.excilys.cdb.dao;
+package com.excilys.cdb.validator;
 
-import java.time.LocalDate;  
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;   
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+
+import org.springframework.stereotype.Component;
 
 import com.excilys.cdb.beans.ComputerBeanDb;
 import com.excilys.cdb.exception.FormatException;
 import com.excilys.cdb.exception.IdValidationException;
 import com.excilys.cdb.exception.NameValidationException;
+import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.exception.ValidationException;
 
+@Component
 public class ValidationDAO {
 	
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	
-	private final String ERR_DATE_ORDER = "Discontinuation date has to be later than Introduction date";
-	private final String ERR_DATE_ABSENT = "Can't have a discontinuation date without an introduction one";
-	private final String ERR_COMPANY = "Company id does not match any Company";
+	private static final String ERR_DATE_ORDER = "Discontinuation date has to be later than Introduction date";
+	private static final String ERR_DATE_ABSENT = "Can't have a discontinuation date without an introduction one";
+	private static final String ERR_COMPANY = "Company id does not match any Company";
+	
+	private static final String NO_RESULT = "No Resultset found";
+	private static final String EMPTY_RESULT = "Empty Resultset";
+	
+	
+	/*           Public validators           */
 	
 	public void validateComputerBeanDb(ComputerBeanDb cBean) throws ValidationException {
 		
@@ -33,7 +45,27 @@ public class ValidationDAO {
 		
 	}
 	
-	private boolean validateId(int id) {
+	public void validateFound(Optional<ResultSet> results) throws NotFoundException {
+		
+		
+		if(results.isPresent()) {
+			try {
+				results.get().next();
+			
+			} catch( SQLException e ) {
+				throw( new NotFoundException(EMPTY_RESULT, e));
+			}
+		
+		} else {
+			throw( new NotFoundException(NO_RESULT));
+		}
+		
+	}
+	
+	
+	/*             Private methods             */
+
+	private boolean validateId(int id) { 
 		return(id < 0);
 	}
 	

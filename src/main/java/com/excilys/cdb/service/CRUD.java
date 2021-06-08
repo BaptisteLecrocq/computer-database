@@ -4,6 +4,7 @@ import com.excilys.cdb.dao.DAO;
 import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.exception.TransactionException;
 import com.excilys.cdb.model.Computer;
+import com.excilys.cdb.model.Page;
 import com.excilys.cdb.model.Company;
 import com.excilys.cdb.model.RequestParameter;
 
@@ -79,12 +80,12 @@ public class CRUD {
 	
 	/*           Page Requests              */
 	
-	public ArrayList<Computer> pageComputer(int start, int taille, RequestParameter parameters) {
-		return(dao.pageComputer(start, taille, parameters));
+	public ArrayList<Computer> pageComputer(Page page) {
+		return(dao.pageComputer(page));
 	}
 	
-	public ArrayList<Company> pageCompany(int start, int taille, RequestParameter parameters) {
-		return(dao.pageCompany(start, taille, parameters));
+	public ArrayList<Company> pageCompany(Page page) {
+		return(dao.pageCompany(page));
 	}
 	
 }

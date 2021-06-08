@@ -39,12 +39,11 @@
 							    	</ul>
 							    </section>
 							    </div>
-							</c:if>
-                        	
+							</c:if>                        	
                         
                             <div class="form-group">
                                 <label for="computerName">Computer name</label>
-                                <input type="text" class="form-control" id="computerName" name="computerName" placeholder="Computer name">
+                                <input type="text" class="form-control" id="computerName" name="computerName" placeholder="Computer name" required="required">
                             </div>
                             <div class="form-group">
                                 <label for="introduced">Introduced date</label>
@@ -53,6 +52,10 @@
                             <div class="form-group">
                                 <label for="discontinued">Discontinued date</label>
                                 <input type="date" class="form-control" id="discontinued" name="discontinued" placeholder="Discontinued date">
+                                
+                                <div id="errorDiscontinued" class="" >
+                                </div>
+                            	
                             </div>
                             <div class="form-group">
                                 <label for="companyId">Company</label>
@@ -68,6 +71,9 @@
                         </fieldset>
                         
                         <div class="alert alert-danger page-alert" id="alert-message" style="display: none;">
+                        	<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+								<span aria-hidden="true">×</span>
+							</button>
                         	<strong>Action add Canceled ! </strong>
                         	<label id = erroradd ></label>
                         </div>
@@ -84,6 +90,7 @@
         </div>
     </section>
 	<script src="../../cdb/static/js/jquery.min.js"></script>
+	<script src="../../cdb/static/js/bootstrap.min.js"></script>
 	<script src="../../cdb/static/js/addComputer.js"></script>
 </body>
 </html>

@@ -10,9 +10,9 @@ import com.excilys.cdb.beans.CompanyBeanCLI;
 import com.excilys.cdb.beans.ComputerBeanCLI;
 import com.excilys.cdb.beans.RequestParameterBean;
 import com.excilys.cdb.controller.ControllerCentral;
-import com.excilys.cdb.model.Computer;
 import com.excilys.cdb.model.PageCompany;
 import com.excilys.cdb.model.PageComputer;
+import com.excilys.cdb.validator.ValidationCLI;
 
 
 @Component
@@ -28,7 +28,7 @@ public class CLI {
 	@Autowired
 	private ControllerCentral control;
 	@Autowired
-	private Validation val;
+	private ValidationCLI val;
 	
 	
 	private MenuChoice status;
@@ -141,6 +141,7 @@ public class CLI {
 				
 				control.setCompanyCLI(askCompany());
 				control.addCompany();
+				System.out.println("Company added");
 				
 				sc.next();				
 				status = MenuChoice.MENU;
@@ -153,6 +154,10 @@ public class CLI {
 				System.out.println(orderCompany[1] + "\n");
 				
 				control.deleteCompany(sc.nextInt());
+				System.out.println("Company deleted");
+				
+				sc.next();				
+				status = MenuChoice.MENU;
 				
 				break;
 			
@@ -178,7 +183,6 @@ public class CLI {
 		}
 		
 		sc.close();
-		control.close();
 	}
 
 
@@ -309,9 +313,10 @@ public class CLI {
 			
 			switch(i) {
 			case 0:
-				System.out.println(order[i] + "\n");
+				System.out.println(orderCompany[i] + "\n");
 				break;
 			
+				/*
 			case 1:
 				System.out.println(order[i] + "\n");
 				
@@ -329,12 +334,16 @@ public class CLI {
 				
 				cBean.setId(companyId);
 				break;
+				
+				*/
 			
 			case 2:
-				System.out.println(order[i] + "\n");
+				System.out.println(orderCompany[i] + "\n");
 				
 				cBean.setName(sc.next());
-				break;			
+				break;
+			
+			default:
 			}
 			i++;
 		}
