@@ -13,15 +13,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import com.excilys.cdb.beans.CompanyBeanDb;
 import com.excilys.cdb.beans.ComputerBeanDb;
 import com.excilys.cdb.beans.RequestParameterBeanDb;
+import com.excilys.cdb.dao.JDBCMapper.CompanyRowMapper;
+import com.excilys.cdb.dao.JDBCMapper.ComputerRowMapper;
 import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.exception.TransactionException;
 import com.excilys.cdb.mapper.Mapper;
@@ -32,7 +41,7 @@ import com.excilys.cdb.model.Page;
 import com.excilys.cdb.model.RequestParameter;
 
 @Repository
-public class DAO {
+public class DAO{
 	
 	private static final String getComputer = "SELECT computer.id, computer.name, computer.introduced, computer.discontinued, computer.company_id, company.name ";
 	private static final String getCompany = "SELECT id, name ";
@@ -40,17 +49,17 @@ public class DAO {
 	private static final String countCompany = "SELECT COUNT(company.id) ";
 	private static final String allComputers = "FROM computer LEFT JOIN company ON computer.company_id = company.id ";
 	private static final String allCompanies = "FROM company ";
-	private static final String searchComputer = " WHERE computer.name LIKE ? ";
-	private static final String searchCompany = " WHERE company.name LIKE ? ";
-	private static final String pageModel = "LIMIT ? OFFSET ?;";	
+	private static final String searchComputer = " WHERE computer.name LIKE :searchTerm ";
+	private static final String searchCompany = " WHERE company.name LIKE :searchTerm ";
+	private static final String pageModel = "LIMIT :size OFFSET :start ;";
 	
 	private static final String getLastComputerId = "SELECT max(id) FROM computer;";
 	private static final String getLastCompanyId = "SELECT max(id) FROM company;";
-	private static final String addComputer = "INSERT INTO computer (name, introduced, discontinued, company_id) VALUES(?,?,?,?)";
-	private static final String addCompany = "INSERT INTO company (name) VALUES(?)";
-	private static final String getOneComputer = "SELECT computer.id, computer.name, computer.introduced, computer.discontinued, computer.company_id, company.name FROM computer LEFT JOIN company ON computer.company_id = company.id WHERE computer.id=?";
-	private static final String updateComputer = "UPDATE computer SET name = ? ,introduced = ?, discontinued = ?, company_id = ? WHERE id=?";
-	private static final String deleteComputer = "DELETE FROM computer WHERE id=?";
+	private static final String addComputer = "INSERT INTO computer (name, introduced, discontinued, company_id) VALUES(:name,:introduced,:discontinued,:companyId)";
+	private static final String addCompany = "INSERT INTO company (name) VALUES(:id)";
+	private static final String getOneComputer = "SELECT computer.id, computer.name, computer.introduced, computer.discontinued, computer.company_id, company.name FROM computer LEFT JOIN company ON computer.company_id = company.id WHERE computer.id=:id";
+	private static final String updateComputer = "UPDATE computer SET name = :name ,introduced = :introduced, discontinued = :discontinued, company_id = :companyId WHERE id=:id";
+	private static final String deleteComputer = "DELETE FROM computer WHERE id=:id";
 	private static final String deleteCompany = "DELETE FROM company WHERE id=?";
 	private static final String deleteComputers = "DELETE FROM computer WHERE id IN(";
 	private static final String deleteLinkedComputers ="DELETE FROM computer WHERE company_id=?";
@@ -60,8 +69,11 @@ public class DAO {
 	private static final String[] columnComputer = { "computer.id ", "computer.name ", "computer.introduced ", "computer.discontinued ", "company.name " };
 	private static final String[] columnCompany = { "company.id ", "company.name " };
 	
-	private static Connection con;
 	
+	@Autowired
+	private ComputerRowMapper computerMapper;
+	@Autowired
+	private CompanyRowMapper companyMapper;
 	@Autowired
 	private Database db;
 	@Autowired
@@ -74,41 +86,22 @@ public class DAO {
 	
 	
 	/*            Simple Requests             */
-	
-	public Optional<ResultSet> simpleRequest(String query) {
-		Optional<ResultSet> results = Optional.empty();
-		Statement stmt;		
-		
-		try {
-			
-			con = db.getConnection();
-			stmt = con.createStatement();
-			results = Optional.ofNullable(stmt.executeQuery(query));
-			
-		} catch (SQLException e) {
-			logger.error(e.toString());		
-			e.printStackTrace();
-		}
-		
-		return(results);	
-		
-	}
 
 	public int getLastComputerId() {
 		
-		Optional<ResultSet> results = simpleRequest(getLastComputerId);
-		int id = map.countComputer(results);
-		
-		close();
+		JdbcTemplate temp = new JdbcTemplate(db.getDataSource());		
+		int id = temp.queryForObject(getLastComputerId, Integer.class);
+
 		return(id);
 	}
 	
+	
 	public int getLastCompanyId() { 
 		
-		Optional<ResultSet> results = simpleRequest(getLastCompanyId);
-		int id = map.countCompany(results);
 		
-		close();
+		JdbcTemplate temp = new JdbcTemplate(db.getDataSource());		
+		int id = temp.queryForObject(getLastCompanyId, Integer.class);
+
 		return(id);
 	}
 	
@@ -117,80 +110,39 @@ public class DAO {
 	
 	public boolean addComputer(Computer computer){
 		
-		
 		ComputerBeanDb cBean = mapDb.mapComputerModelToDTOdb(computer);
 		
-		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(addComputer) ){			
-			
-			ps.setString(1, cBean.getName());
-			ps.setInt(4, cBean.getCompanyId());
-			
-			Optional<String> start = Optional.ofNullable(cBean.getIntroduced());
-			Optional<String> end = Optional.ofNullable(cBean.getDiscontinued());
-			
-			if(!start.isPresent()) {
-				ps.setNull(2, 0);
-				
-			}else {
-				ps.setDate(2, Date.valueOf(start.get()));
-			}
-			
-			if(!end.isPresent()) {
-				ps.setNull(3, 0);
-				
-			} else {
-				ps.setDate(3, Date.valueOf(end.get()));
-			}
-			
-			ps.executeUpdate();
-			
-			return true;
-			
-		} catch(SQLException e){
-			logger.error(e.toString());
-			return false;
-		}
+		SqlParameterSource params = new BeanPropertySqlParameterSource(cBean);
+		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
+		
+		temp.update(addComputer, params);
+		
+		return true;
+		
 	}
 	
 	public void addCompany(Company company) {
 		
 		CompanyBeanDb cBean = mapDb.mapCompanyModelToDTOdb(company);
 		
-		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(addCompany) ){
-			
-			if( cBean.getName() == null) {
-				ps.setNull(1, 0);
-				
-			} else {
-				ps.setString(1, cBean.getName());
-			}
-			
-			ps.executeUpdate();
-			
-		} catch (SQLException e) {
-			logger.error(e.toString());
-			e.printStackTrace();
-		}
+		SqlParameterSource params = new BeanPropertySqlParameterSource(cBean);
+		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
+		
+		temp.update(addCompany, params);
 		
 	}
 
 	public Optional<Computer> findComputer(int id){		
-
-		Optional<ResultSet> results = Optional.empty();	
+		
 		Optional<Computer> computer = Optional.empty();
 		
-		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(getOneComputer) ) {
-
-			ps.setInt(1, id);
-			results = Optional.ofNullable(ps.executeQuery());
-			computer = map.getOneComputer(results);
-			
-		}catch(SQLException e) {
-			logger.error(e.toString());
-			
-		}catch(NotFoundException e) {
-			logger.info(e.toString());
-		}
+		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
+		
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("id", id);
+				
+		ComputerBeanDb cBean = temp.query(getOneComputer, params, computerMapper).get(0);
+		computer = Optional.ofNullable(map.mapDAOBeanToComputer(cBean));
 		
 		return(computer);
 		
@@ -200,52 +152,25 @@ public class DAO {
 
 		ComputerBeanDb cBean = mapDb.mapComputerModelToDTOdb(computer);
 		
-		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(updateComputer) ) {
-			
-			ps.setString(1,cBean.getName());
-			ps.setInt(4, cBean.getCompanyId());
-			ps.setInt(5, cBean.getId());
-			
-			Optional<String> start = Optional.ofNullable(cBean.getIntroduced());
-			Optional<String> end = Optional.ofNullable(cBean.getDiscontinued());
-			
-			if(!start.isPresent()) {
-				ps.setNull(2, 0);
-				
-			}else {
-				ps.setDate(2, Date.valueOf(start.get()));
-			}
-			
-			if(!end.isPresent()) {
-				ps.setNull(3, 0);
-				
-			} else {
-				ps.setDate(3, Date.valueOf(end.get()));
-			}
-			
-			ps.executeUpdate();
-			return true;
-			
-		} catch(SQLException e){
-			
-			logger.error(e.toString());
-			return false;
-		}
+		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
+		SqlParameterSource params = new BeanPropertySqlParameterSource(cBean);
+		
+		temp.update(updateComputer, params);
+		
+		return true;
 	}
 	
 	public boolean deleteComputer(int id){
 
-		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(deleteComputer) ) {
-					
-			ps.setInt(1,id);
-			ps.executeUpdate();
-			
-			return true;
-			
-		}catch (SQLException e) {
-			logger.error(e.toString());			
-			return false;
-		}
+		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
+		
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("id", id);
+		
+		temp.update(deleteComputer, params);
+		
+		return true;
+		
 	}
 	
 	public void deleteCompany(int id) throws TransactionException {
@@ -290,31 +215,19 @@ public class DAO {
 		
 		String[] buffer = list.split(",");
 		String query = deleteComputers;
-		ArrayList<Integer> values = new ArrayList<Integer>();
+		
+		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
+		MapSqlParameterSource params = new MapSqlParameterSource();
 
-		values.add(Integer.parseInt(buffer[0]));
 		
-		for(int i=1; i<buffer.length; i++) {
+		for(int i=0; i<buffer.length; i++) {
 			
-			query+="?,";
-			values.add(Integer.parseInt(buffer[i]));
+			query+=":id"+i+", ";
+			params.addValue("id"+i, Integer.parseInt(buffer[i]));
 			
 		}
-		query+="?)";
 		
-		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
-			
-			for(int i = 0; i < values.size(); i++) {
-				ps.setInt(i, (int) values.get(i));
-			}
-			
-			ps.executeUpdate();
-		
-			
-		} catch (SQLException e) {
-			logger.error(e.toString());
-			e.printStackTrace();
-		}
+		temp.update(query, params);
 		
 	}
 	
@@ -323,163 +236,128 @@ public class DAO {
 	
 	public ArrayList<Computer> listComputer(RequestParameter parameters){
 			
-		Optional<ResultSet> results = Optional.empty();
-		ArrayList<Computer> searchResult = new ArrayList<Computer>();
+		List<ComputerBeanDb> searchResult = new ArrayList<ComputerBeanDb>();
+		ArrayList<Computer> computerList = new ArrayList<Computer>();
 		
-		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(getComputer+allComputers+searchComputer+";") ) {
-			
-			ps.setString(1, "%"+parameters.getSearchTerm()+"%");
-			results = Optional.ofNullable(ps.executeQuery());
-			searchResult = map.mapComputerList(results);
-			
-			
-		} catch (SQLException e) {
-			logger.error(e.toString());
-			e.printStackTrace();
-			
-		} catch (NotFoundException e) {
-			logger.info(e.toString());
-		}
+		String query = getComputer+allComputers+searchComputer;
 		
-		return(searchResult);
+		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("searchTerm", "%"+parameters.getSearchTerm()+"%");
+		
+		searchResult = temp.query(query, params, computerMapper);
+		
+		computerList = (ArrayList<Computer>) searchResult.stream()
+					.map(s -> map.mapDAOBeanToComputer(s))
+					.collect(Collectors.toList());
+		
+		return(computerList);
+		
 	}		
 	
 	public ArrayList<Company> listCompany(RequestParameter parameters){
 			
-		Optional<ResultSet> results = Optional.empty();
-		ArrayList<Company> searchResult = new ArrayList<Company>();
+		List<CompanyBeanDb> searchResult = new ArrayList<CompanyBeanDb>();
+		ArrayList<Company> computerList = new ArrayList<Company>();
 		
-		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(getCompany+allCompanies+searchCompany+";") ) {
-			
-			ps.setString(1, "%"+parameters.getSearchTerm()+"%");
-			results = Optional.ofNullable(ps.executeQuery());
-			searchResult = map.mapCompanyList(results);
-			
-			
-		} catch (SQLException e) {
-			logger.error(e.toString());
-			e.printStackTrace();
-			
-		} catch (NotFoundException e) {
-			logger.info(e.toString());
-		}
+		String query = getCompany+allCompanies+searchCompany;
 		
-		return(searchResult);
+		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("searchTerm", "%"+parameters.getSearchTerm()+"%");
+		
+		searchResult = temp.query(query, params, companyMapper);
+		
+		computerList = (ArrayList<Company>) searchResult.stream()
+					.map(s -> map.mapDAOBeanToCompany(s))
+					.collect(Collectors.toList());
+		
+		return(computerList);
 	}		
-
 	
 	public int countComputer(RequestParameter parameters) {
 			
-		Optional<ResultSet> results = Optional.empty();
-		int count = 0;
+		String query = countComputer+allComputers+searchComputer;
 		
-		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(countComputer+allComputers+searchComputer+";") ) {
-			
-			ps.setString(1, "%"+parameters.getSearchTerm()+"%");
-			results = Optional.ofNullable(ps.executeQuery());
-			count = map.countComputer(results);
-					
-		} catch (SQLException e) {
-			logger.error(e.toString());
-			e.printStackTrace();
-		}
+		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("searchTerm", "%"+parameters.getSearchTerm()+"%");
+		
+		int count = temp.queryForObject(query, params, Integer.class);
 					
 		return(count);
 	}			
 	
 	public int countCompany(RequestParameter parameters) {
 			
-		Optional<ResultSet> results = Optional.empty();
-		int count = 0;
+		String query = countCompany+allCompanies+searchCompany;
 		
-		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(countCompany+allCompanies+searchCompany+";") ) {
-			
-			ps.setString(1, "%"+parameters.getSearchTerm()+"%");
-			results = Optional.ofNullable(ps.executeQuery());
-			count = map.countCompany(results);
-					
-		} catch (SQLException e) {
-			logger.error(e.toString());
-			e.printStackTrace();
-		}
+		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("searchTerm", "%"+parameters.getSearchTerm()+"%");
+		
+		int count = temp.queryForObject(query, params, Integer.class);
 					
 		return(count);
 	}			
 	
 	public ArrayList<Computer> pageComputer(Page page){
 		
-		Optional<ResultSet> results = Optional.empty();
-		ArrayList<Computer> searchResult = new ArrayList<Computer>(); 
+		
 		RequestParameterBeanDb parameters = mapDb.mapParametersToDTOdb(page.getParameters());
+		List<ComputerBeanDb> searchResult = new ArrayList<ComputerBeanDb>();
+		ArrayList<Computer> computerList = new ArrayList<Computer>();
 		
 		String query = getComputer+allComputers+searchComputer+orderBy+columnComputer[parameters.getChoice()]+order[parameters.getOrder()]+pageModel;
 		
-		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
-			
-			ps.setString(1, "%"+parameters.getSearchTerm()+"%");
-			ps.setInt(2, page.getTaille());
-			ps.setInt(3, page.getStart());
-			results = Optional.ofNullable(ps.executeQuery());
-			searchResult = map.mapComputerList(results);
-			
-			
-		} catch (SQLException e) {
-			logger.error(e.toString());
-			e.printStackTrace();
-			
-		} catch (NotFoundException e) {
-			logger.info(e.toString());
-		}
+		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
 		
-		return(searchResult);
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("searchTerm", "%"+parameters.getSearchTerm()+"%");
+		params.addValue("size",page.getTaille());
+		params.addValue("start", page.getStart());
+		
+		searchResult = temp.query(query, params, computerMapper);
+		
+		computerList = (ArrayList<Computer>) searchResult.stream()
+					.map(s -> map.mapDAOBeanToComputer(s))
+					.collect(Collectors.toList());
+					
+		
+		return(computerList);
+
 	}		
 	
 	public ArrayList<Company> pageCompany(Page page){
 			
-		Optional<ResultSet> results = Optional.empty();
-		ArrayList<Company> searchResult = new ArrayList<Company>();
 		RequestParameterBeanDb parameters = mapDb.mapParametersToDTOdb(page.getParameters());
+		List<CompanyBeanDb> searchResult = new ArrayList<CompanyBeanDb>();
+		ArrayList<Company> computerList = new ArrayList<Company>();
 		
 		String query = getCompany+allCompanies+searchCompany+orderBy+columnCompany[parameters.getChoice()]+order[parameters.getOrder()]+pageModel;
-
 		
-		try ( Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(query) ) {
-			
-			ps.setString(1, "%"+parameters.getSearchTerm()+"%");
-			ps.setInt(2, page.getTaille());
-			ps.setInt(3, page.getStart());
-			results = Optional.ofNullable(ps.executeQuery());
-			searchResult = map.mapCompanyList(results);
-			
-			
-		} catch (SQLException e) {
-			logger.error(e.toString());
-			e.printStackTrace();
-			
-		} catch (NotFoundException e) {
-			logger.info(e.toString());
-		}
+		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
 		
-		return(searchResult);
-	}		
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("searchTerm", "%"+parameters.getSearchTerm()+"%");
+		params.addValue("size",page.getTaille());
+		params.addValue("start", page.getStart());
+		
+		searchResult = temp.query(query, params, companyMapper);
+		
+		computerList = (ArrayList<Company>) searchResult.stream()
+					.map(s -> map.mapDAOBeanToCompany(s))
+					.collect(Collectors.toList());					
+		
+		return(computerList);	
+	}
 	
 	/*            Utility             */
-	
- 	public Connection getCon() {
-		return con;
-	}	
 
 	public Database getDb() {
 		return db;
 	}
+
 	
-	public void close() {
-		try {
-			con.close();
-		} catch (SQLException e) {
-			logger.error(e.toString());
-			e.printStackTrace();
-		}
-	}
 
 }

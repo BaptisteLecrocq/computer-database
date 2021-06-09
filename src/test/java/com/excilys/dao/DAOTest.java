@@ -30,7 +30,6 @@ public class DAOTest {
 	@Autowired
 	private static DAO daotest;
 	
-	private Connection con = daotest.getCon();
 	private Database db = daotest.getDb();
     
     @BeforeClass
@@ -39,7 +38,6 @@ public class DAOTest {
     
     @AfterClass
     public static void close() {
-    	daotest.close();
     }
     
     @Test

@@ -4,14 +4,18 @@ import java.sql.ResultSet;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
+import com.excilys.cdb.beans.CompanyBeanDb;
+import com.excilys.cdb.beans.ComputerBeanDb;
 import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.model.*;
 import com.excilys.cdb.validator.ValidationDAO;
@@ -22,6 +26,7 @@ public class Mapper {
 	@Autowired
 	private static ValidationDAO val;
 	
+	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	private static Logger logger = LoggerFactory.getLogger(Mapper.class);
 
  	public int countComputer( Optional<ResultSet> results ) {
@@ -29,14 +34,14 @@ public class Mapper {
 		int i = 0;
 		
 		try {
-			val.validateFound(results);
+			//val.validateFound(results);
 			results.get().next();
 			i = results.get().getInt(1);
-		
+		/*
 		} catch (NotFoundException e){
 			logger.info(e.getMessage());
 			e.printStackTrace();
-			
+			*/
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -63,6 +68,61 @@ public class Mapper {
 		
 		return(i);
 	}
+	
+	public Computer mapDAOBeanToComputer(ComputerBeanDb cBean) {
+		
+		//Validation from Database?
+		
+		String start = cBean.getIntroduced();
+		String end = cBean.getDiscontinued();
+		
+		LocalDate introduced = null;
+		LocalDate discontinued = null;
+		
+		if( !("".equals(start) || start == null) ){
+			
+			try {
+				start = start.substring(0, 10);
+				introduced = LocalDate.parse(start, formatter);
+				
+			} catch (Exception e) {
+				logger.error(e.toString());
+				e.printStackTrace();
+			} 
+		}
+		
+		if( !("".equals(end) || end == null) ){
+			
+			try {
+				end = end.substring(0, 10);
+				discontinued = LocalDate.parse(end, formatter);
+				
+			} catch (Exception e) {
+				logger.error(e.toString());
+				e.printStackTrace();
+			} 
+		}
+		
+		Computer buffer = new Computer
+				.ComputerBuilder(cBean.getName())
+				.withId(cBean.getId())
+				.withStart(introduced)
+				.withEnd(discontinued)
+				.withManufacturer(cBean.getCompanyId(),cBean.getCompanyName())
+				.build();
+		
+		return buffer;
+		
+	};
+
+	public Company mapDAOBeanToCompany(CompanyBeanDb cBean) {
+		
+		Company company = new Company(cBean.getId(),cBean.getName());
+		
+		return(company);
+		
+	}
+	
 	
 	public Optional<Computer> getOneComputer( Optional<ResultSet> results ) throws NotFoundException {
 		

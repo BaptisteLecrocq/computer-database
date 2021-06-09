@@ -7,6 +7,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import com.excilys.cdb.dao.DAO;
 import com.excilys.cdb.ui.CLI;
 
 @Configuration
@@ -27,6 +28,9 @@ public class Main {
 		
 		Logger logger = LoggerFactory.getLogger(Main.class);
 		logger.debug("Coucou");
+		
+		//@Bean
+		
 		
 		ApplicationContext context = new AnnotationConfigApplicationContext(Main.class);
 		test = context.getBean(CLI.class);

@@ -82,6 +82,10 @@ public class Database {
 		//return(DriverManager.getConnection(url,username,password));
 	}
 	
+	public HikariDataSource getDataSource() {
+		return ds;
+	}
+	
 	
 	public void close() {
 		

@@ -8,8 +8,15 @@ public class ComputerBeanDb {
 	private String introduced;
 	private String discontinued;
 	private int companyId;
+	private String companyName;
 	
 	
+	public String getCompanyName() {
+		return companyName;
+	}
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
+	}
 	public int getId() {
 		return id;
 	}
