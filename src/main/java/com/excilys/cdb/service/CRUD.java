@@ -20,8 +20,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class CRUD {
 	
-	@Autowired
 	private DAO dao;
+	
+	public CRUD( DAO dao ) {
+		
+		this.dao = dao;
+		
+	}
 	
 	public int countComputer(RequestParameter parameters) {
 		return(dao.countComputer(parameters));

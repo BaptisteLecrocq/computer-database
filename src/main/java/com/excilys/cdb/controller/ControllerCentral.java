@@ -38,17 +38,22 @@ public class ControllerCentral {
 	private final PageCompanyFactory companyFactory = new PageCompanyFactory();
 	private Page page;
 	
-	@Autowired
 	private ValidationDTO valDTO;
-	@Autowired
 	private MapperDTO mapDTO;
-	@Autowired
 	private MapperCLI mapCLI;
 	
 	private Computer computer;	
 	private Company company;
 	
 	private static Logger logger = LoggerFactory.getLogger(Controller.class);
+	
+	public ControllerCentral (ValidationDTO valDTO, MapperDTO mapDTO, MapperCLI mapCLI) {
+		
+		this.valDTO = valDTO;
+		this.mapDTO = mapDTO;
+		this.mapCLI = mapCLI;
+		
+	}
 
 	
 	/*              Page Management                */

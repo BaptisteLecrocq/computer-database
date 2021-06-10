@@ -3,6 +3,7 @@ package com.excilys.cdb.servlets;
 import java.io.IOException; 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.ArrayList;
 
 import javax.servlet.ServletException;
@@ -11,83 +12,100 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
 import com.excilys.cdb.beans.CompanyBean;
 import com.excilys.cdb.beans.ComputerBean;
 import com.excilys.cdb.controller.ControllerCentral;
+import com.excilys.cdb.exception.NotFoundException;
+import com.excilys.cdb.mapper.MapperDTO;
+import com.excilys.cdb.model.Company;
+import com.excilys.cdb.model.Computer;
+import com.excilys.cdb.model.RequestParameter;
+import com.excilys.cdb.service.CRUD;
+import com.excilys.cdb.validator.ValidationDTO;
 
-@WebServlet(name = "EditComputer", urlPatterns = "/edit")
-public class EditComputer extends HttpServlet {
+//@WebServlet(name = "EditComputer", urlPatterns = "/edit")
+@Controller
+public class EditComputer {
 	
 	private static final long serialVersionUID = 1L;
-	private ControllerCentral control = new ControllerCentral();
+	private static Logger logger = LoggerFactory.getLogger(EditComputer.class);
 	
-
-	public void doGet( HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
-		
-		ArrayList<CompanyBean> list = control.listCompanyBean();
-		request.setAttribute("companyList", list);
-		
-		request.setAttribute("idComputer", request.getParameter("idComputer"));
-		
-		request.setAttribute("validationFront", "true");
+	private CRUD service;
+	private MapperDTO map;
+	private ValidationDTO valDTO;
 	
-		this.getServletContext().getRequestDispatcher( "/WEB-INF/editComputer.jsp" ).forward( request, response );
+	public EditComputer( CRUD service, MapperDTO map, ValidationDTO valDTO) {
+		
+		this.service = service;
+		this.map = map;
+		this.valDTO = valDTO;
+		
 	}
 	
-	public void doPost( HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+	@GetMapping("/edit")
+	protected ModelAndView doGet( @RequestParam(required=false) int idComputer ) {
 		
-		boolean validationFront = true;
+		ModelAndView editView = new ModelAndView("editComputer");
+		editView.addObject("idComputer", idComputer);		
 		
-		String buffer = request.getParameter("validationFront");
-		if(buffer == null) {
-			System.out.println("Validation attribute null");
-		}
-		else {
+		ArrayList<Company> companylist = new ArrayList<Company>();
+		ArrayList<CompanyBean> list = new ArrayList<CompanyBean>();
+		
+		try {
+			companylist = service.listCompany(new RequestParameter());
+			list = (ArrayList<CompanyBean>) companylist.stream()
+					.map(c -> map.mapCompanyToDTO(c))
+					.collect(Collectors.toList());
 			
-			System.out.println(buffer);
-			validationFront = Boolean.parseBoolean(buffer);
-			
+		} catch (NotFoundException e) {
+			logger.info(e.getMessage());
+			e.printStackTrace();
 		}
 		
+		
+		editView.addObject("companyList", list);
+		
+		editView.addObject("computerDTO", new ComputerBean());
+		
+		return(editView);
+		
+	}
+	
+	@PostMapping("/edit")
+	protected ModelAndView doPost( @RequestParam(required = false) boolean validationFront,
+									@ModelAttribute("computerDTO") ComputerBean cbean ) {
+		
+		
+		ModelAndView editView = new ModelAndView("editComputer");
+		
+		System.out.println("Validation Front : "+validationFront);
+		validationFront = true;
 		
 		if(validationFront) {
-		
-			ComputerBean nbean = new ComputerBean();
 			
-			System.out.println("Update computer Id : "+request.getParameter("id"));
+			System.out.println(cbean);
+			ArrayList<String> errors = valDTO.validateComputerBean(cbean);
 			
-			nbean.setId(request.getParameter("id"));
-			nbean.setName(request.getParameter("computerName"));
-			
-			
-			
-			Optional<String> introducedBean = Optional.ofNullable(request.getParameter("introduced"));
-			if(introducedBean.isPresent()) {
-				nbean.setIntroduced(introducedBean.get());
-			} else {
-				nbean.setIntroduced("n");
+			if(errors.isEmpty()) {
+				
+				Computer computer = map.mapDTOToComputer(cbean);
+				service.addComputer(computer);
+				
 			}
-			
-			Optional<String> discontinuedBean = Optional.ofNullable(request.getParameter("discontinued"));
-			if(discontinuedBean.isPresent()) {
-				nbean.setDiscontinued(discontinuedBean.get());
-			} else {
-				nbean.setDiscontinued("n");
-			}
-			
-			Optional<String> companyIdBean = Optional.ofNullable(request.getParameter("companyId"));
-			if(companyIdBean.isPresent()) {
-				nbean.setCompany(companyIdBean.get());
-			} else {
-				nbean.setCompany("0");
-			}
-			
-			ArrayList<String> errors = control.editComputerBean(nbean);
-			request.setAttribute("errors", errors);
-			
+			editView.addObject("errors", errors);
 		}
 		
-		this.getServletContext().getRequestDispatcher( "/WEB-INF/editComputer.jsp" ).forward( request, response );
+		return(editView);
+
 	}
 
 	

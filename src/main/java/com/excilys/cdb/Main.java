@@ -10,16 +10,6 @@ import org.springframework.context.annotation.Configuration;
 import com.excilys.cdb.dao.DAO;
 import com.excilys.cdb.ui.CLI;
 
-@Configuration
-@ComponentScan( basePackages = { "com.excilys.cdb.controller", 
-									"com.excilys.cdb.service", 
-									"com.excilys.cdb.dao", 
-									"com.excilys.cdb.mapper", 
-									"com.excilys.cdb.dao",
-									"com.excilys.cdb.servlets",
-									"com.excilys.cdb.ui",
-									"com.excilys.cdb.validator"} )
-//@PropertySource( "chemin vers le fichier de config des propriétés" )
 public class Main {
 
 	private static CLI test;	
@@ -32,7 +22,7 @@ public class Main {
 		//@Bean
 		
 		
-		ApplicationContext context = new AnnotationConfigApplicationContext(Main.class);
+		ApplicationContext context = new AnnotationConfigApplicationContext(SpringConfig.class);
 		test = context.getBean(CLI.class);
 		test.init();
 		

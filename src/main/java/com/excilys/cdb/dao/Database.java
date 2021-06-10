@@ -27,9 +27,7 @@ public class Database {
 	
 	
 	private static HikariConfig config;
-	private static HikariDataSource ds;
-	
-	
+	private static HikariDataSource ds;	
 	
 	
 	public static String getUrl() {

@@ -23,8 +23,13 @@ import com.excilys.cdb.validator.ValidationDAO;
 @Component
 public class Mapper {
 	
-	@Autowired
 	private static ValidationDAO val;
+	
+	public Mapper( ValidationDAO val) {
+		
+		this.val = val;
+		
+	}
 	
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	private static Logger logger = LoggerFactory.getLogger(Mapper.class);

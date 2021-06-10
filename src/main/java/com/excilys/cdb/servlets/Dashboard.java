@@ -3,6 +3,7 @@ package com.excilys.cdb.servlets;
 import java.io.IOException; 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.ArrayList;
 
 import javax.servlet.ServletException;
@@ -12,127 +13,155 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.ModelAndView;
+
 import com.excilys.cdb.beans.ComputerBean;
 import com.excilys.cdb.beans.RequestParameterBean;
 import com.excilys.cdb.controller.ControllerCentral;
+import com.excilys.cdb.mapper.MapperDTO;
 import com.excilys.cdb.model.Computer;
+import com.excilys.cdb.model.Page;
+import com.excilys.cdb.model.PageComputer;
+import com.excilys.cdb.model.PageComputerFactory;
+import com.excilys.cdb.model.RequestParameter;
+import com.excilys.cdb.service.CRUD;
+import com.excilys.cdb.validator.ValidationDTO;
 
-@WebServlet(name = "Dashboard", urlPatterns = "/app")
-public class Dashboard extends HttpServlet {
+//@WebServlet(name = "Dashboard", urlPatterns = "/app")
+@Controller
+public class Dashboard {
 
 	private final int pageSize = 12;
 	
 	private static final long serialVersionUID = 1L;
 	private static final String[] columnName = { "Computer name", "Introduced date", "Discontinued date", "Company"};
-	private ControllerCentral control = new ControllerCentral();
 	
 
-	//@SuppressWarnings("unused")
-	public void doGet( HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+	private CRUD service;
+	private MapperDTO map;
+	private ValidationDTO valDTO;
+	private JSPParameter params;
+	
+	private final PageComputerFactory computerFactory = new PageComputerFactory();
+	private Page page;
+	
+	public Dashboard( CRUD service, MapperDTO map, ValidationDTO valDTO, JSPParameter params) {
 		
-		/*
-		String paramAuteur = request.getParameter( "auteur" );
-		String message = "Transmission de variables : OK ! " + paramAuteur;
-		request.setAttribute( "test", message );
+		this.service = service;
+		this.map = map;
+		this.valDTO = valDTO;
+		this.params = params;
 		
-		TestBean bean = new TestBean();
+	}	
+
+	@GetMapping("/app")
+	public ModelAndView doGet( @RequestParam(required=false) Integer pageNumber,
+								@RequestParam(required=false) Integer order,
+								@RequestParam(required=false) Integer choice,
+								@RequestParam(required=false) String search,
+								@RequestParam(required=false) String refresh,
+								WebRequest request){
 		
-		bean.setNom("Gates");
-		bean.setPrenom("Bill");		
-		request.setAttribute("bean", bean);
-		*/		
+		ModelAndView dashboardView = new ModelAndView("dashboard");
 		
 		
-		HttpSession session = request.getSession();
-		
-		
-		Optional<String> paramPageNumber = Optional.ofNullable(request.getParameter("pageNumber"));		
-		ArrayList<ComputerBean> page = new ArrayList<ComputerBean>();
-		String searchTerm;
-		int order = -1;
-		int count = 0;
-		int choice = 0;
-		
-		Object buffer;
-		String read;
 		
 		//pageNumber
-		if( paramPageNumber.isPresent()) {
-			request.setAttribute("pageNumber", paramPageNumber.get());
-		}
-		else {
-			request.setAttribute("pageNumber", 0);
-		}
 		
-		//searchTerm
-		read = request.getParameter("search");
-		if(read == null || read.length() < 1) {
-			buffer = session.getAttribute("previousSearch");
-			if(buffer != null) {
-				searchTerm = buffer.toString();
-			
-			} else {
-				searchTerm = null;
-			}
+		if( pageNumber == null ) {
+			pageNumber = params.getPageNumber();
 		
 		} else {
-			searchTerm = read;
+			params.setPageNumber(pageNumber);
 		}
+		dashboardView.addObject("pageNumber", pageNumber);
+		
+		//searchTerm
+		if( search == null ) {
+			search = params.getPreviousSearch();
+
+		} else {
+			params.setPreviousSearch(search);
+		}
+		dashboardView.addObject("search", search);
 		
 		//order
-		read = request.getParameter("order");
-		if( read == null) {
-			order = 0;
+		if( order == null ) {
+			order = params.getOrder();
 		
-		} else { 
-			order = Integer.parseInt(read);
+		} else {
+			params.setOrder(order);
 		}
+		dashboardView.addObject("order", order);
+		
 		
 		//choice
-		read = request.getParameter("choice");
-		if( read == null) {
-			choice = 0;
+		if( choice == null ) {
+			choice = params.getChoice();
 		
-		} else { 
-			choice = Integer.parseInt(read);
+		} else {
+			params.setChoice(choice);
 		}
+		dashboardView.addObject("choice", choice);
 		
-		String refresh = request.getParameter("refresh");
-		if(refresh != null) {
+		
+		
+		if(refresh != null && refresh.length() > 0) {
 			System.out.println(refresh);
-			session.invalidate();
-			//session.setAttribute("previousSearch","");
+			
+			pageNumber = 0;
+			search = "";
+			order = 0;
+			choice = 0;
+			
+			refresh = null;
 		}
-		else {
-			session.setAttribute("previousSearch", searchTerm);
-		}
-		
-		RequestParameterBean parameters = new RequestParameterBean();
-		parameters.setSearchTerm(searchTerm);
-		parameters.setOrder(order);
-		parameters.setChoice(choice+1);
-		control.initPage(Computer.class, pageSize, Integer.parseInt(request.getAttribute("pageNumber").toString()), parameters);
-		
-		page = control.pageComputerBean();
-		count = control.getPage().getCount();		
-		
-		request.setAttribute("columnName", columnName);
-		request.setAttribute("order", order);
-		request.setAttribute("choice", choice);
-		request.setAttribute("count", count);					
-		request.setAttribute("page", page);
+
 		
 		
+		RequestParameterBean paramBean = new RequestParameterBean();
+		paramBean.setSearchTerm(search);
+		paramBean.setOrder(order);
+		paramBean.setChoice(choice+1);
 		
-		this.getServletContext().getRequestDispatcher( "/WEB-INF/dashboard.jsp" ).forward( request, response );
+		RequestParameter parameters = map.mapParameters(paramBean);
+		
+		page = computerFactory.getPage(pageNumber*pageSize, pageSize, pageNumber, parameters);
+		
+		ArrayList<Computer> computerList = service.pageComputer(page);
+		page.setElements(computerList);
+		
+		ArrayList<ComputerBean> beanList = (ArrayList<ComputerBean>) computerList.stream()
+											.map(c -> map.mapComputerToDTO(c))
+											.collect(Collectors.toList());
+		
+		Page.count = service.countComputer(parameters);		
+		int count = page.getCount();	
+		
+		dashboardView.addObject("params", params);
+		dashboardView.addObject("columnName", columnName);
+		dashboardView.addObject("count", count);					
+		dashboardView.addObject("page", beanList);
+		
+		return(dashboardView);			
 	}
 	
-	public void doPost( HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+	@PostMapping("/app")
+	public ModelAndView doPost( @RequestParam(required=false) String selection ) {
 		
-		String test = request.getParameter("selection");
-		control.deleteComputerList(test);
+		ModelAndView dashboardView = new ModelAndView("dashboard");
 		
-		this.getServletContext().getRequestDispatcher( "/WEB-INF/editComputer.jsp" ).forward( request, response );
+		if( selection != null ) {
+			service.deleteComputerList(selection);
+		}
+		
+		return(dashboardView);
 	}
 	
 }

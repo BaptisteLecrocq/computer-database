@@ -1,6 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://www.springframework.org/tags/form" prefix="form" %>
+
 <!DOCTYPE html>
 <head>
 <title>Edit Computer</title>
@@ -24,44 +26,75 @@
                        id : <c:out value="${ idComputer }"/>
                     </div>
                     <h1>Edit Computer</h1>
+                    
+                     <c:if test="${ errors.size() > 0 }" >
+                      		<div class="form-group alert alert-danger">
+					    <section id="error">
+					    	<ul>
+					    		<c:forEach var="error" items="${ errors }" >
+					    			<li>
+					    				<c:out value="${ error }" />
+					    			</li>
+					    		</c:forEach>
+					    	</ul>
+					    </section>
+					    </div>
+					</c:if>  
+							
 
-                    <form action="edit" method="POST">
-                        <input type="hidden" value="${ idComputer }" id="id" name="id"/> 
+                    <form:form modelAttribute="computerDTO" action="edit" method="POST">
+                        <form:input path="id" type="hidden" value="${ idComputer }" id="id" name="id"/> 
                         <fieldset>
-                            <div class="form-group">
-                                <label for="computerName">Computer name</label>
-                                <input type="text" class="form-control" id="computerName" name="computerName" placeholder="Computer name">
+                           <div class="form-group">
+                                <label for="name">Computer name</label>
+                                <form:input path="name" type="text" class="form-control" id="name" name="name" placeholder="Computer name" required="required" />
                             </div>
                             <div class="form-group">
                                 <label for="introduced">Introduced date</label>
-                                <input type="date" class="form-control" id="introduced" name="introduced" placeholder="Introduced date">
+                                <form:input path="introduced" type="date" class="form-control" id="introduced" name="introduced" placeholder="Introduced date" />
                             </div>
                             <div class="form-group">
                                 <label for="discontinued">Discontinued date</label>
-                                <input type="date" class="form-control" id="discontinued" name="discontinued" placeholder="Discontinued date">
+                                <form:input path="discontinued" type="date" class="form-control" id="discontinued" name="discontinued" placeholder="Discontinued date" />
+                                
+                                <div id="errorDiscontinued" class="" >
+                                </div>
+                            	
                             </div>
                             <div class="form-group">
-                                <label for="companyId">Company</label>
-                                <select class="form-control" id="companyId" name="companyId">
+                                <label for="company">Company</label>
+                                <form:select path="company" class="form-control" id="company" name="company">
                                 	<option value="0">--</option>
                                 	<c:forEach var="company" items="${ companyList }">
                                 		<option value="${ company.id }">
                                 			<c:out value="${ company.name }" />
                                 		</option>
                                 	</c:forEach>
-                                </select>
-                            </div>           
+                                </form:select>
+                            </div>              
                         </fieldset>
+                        
+                         <div class="alert alert-danger page-alert" id="alert-message" style="display: none;">
+                        	<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+								<span aria-hidden="true">×</span>
+							</button>
+                        	<strong>Action edit Canceled ! </strong>
+                        	<label id = erroradd ></label>
+                        </div>
+                        
                         <div class="actions pull-right">
                             <input type="submit" value="Edit" class="btn btn-primary">
                             or
                             <c:url value ="/app" var = "lienDashboard" />
                             <a href="${ lienDashboard }" class="btn btn-default">Cancel</a>
                         </div>
-                    </form>
+                    </form:form>
                 </div>
             </div>
         </div>
     </section>
+    <script src="../../cdb/static/js/jquery.min.js"></script>
+	<script src="../../cdb/static/js/bootstrap.min.js"></script>
+	<script src="../../cdb/static/js/addComputer.js"></script>
 </body>
 </html>

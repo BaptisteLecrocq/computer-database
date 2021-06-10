@@ -20,8 +20,15 @@ import com.excilys.cdb.validator.ValidationDAO;
 @Component
 public class MapperDTOdb {
 	
-	private ValidationDAO valDao = new ValidationDAO();
+	private ValidationDAO valDao;
+	
 	private static Logger logger = LoggerFactory.getLogger(MapperDTOdb.class);
+	
+	public MapperDTOdb ( ValidationDAO valDAO) {
+		
+		this.valDao = valDAO;
+		
+	}
 	
 	public ComputerBeanDb mapComputerModelToDTOdb( Computer computer ) {
 		

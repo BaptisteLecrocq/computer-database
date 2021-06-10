@@ -35,4 +35,10 @@ public class RequestParameter {
 		this.choice = choice;
 	}
 	
+	public String toString() {
+		
+		return("SearchTerm : "+searchTerm+", Order : "+order+", Choice : "+choice);
+		
+	}
+	
 }

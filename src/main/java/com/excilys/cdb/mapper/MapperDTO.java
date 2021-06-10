@@ -6,8 +6,10 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
+import com.excilys.cdb.beans.CompanyBean;
 import com.excilys.cdb.beans.ComputerBean;
 import com.excilys.cdb.beans.RequestParameterBean;
+import com.excilys.cdb.model.Company;
 import com.excilys.cdb.model.Computer;
 import com.excilys.cdb.model.RequestParameter;
 
@@ -15,9 +17,13 @@ import com.excilys.cdb.model.RequestParameter;
 @Component
 public class MapperDTO {
 	
+	
+	
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	
 	public Computer mapDTOToComputer(ComputerBean cBean) {
+		
+		//Validation
 		
 		String start = cBean.getIntroduced();
 		String end = cBean.getDiscontinued();
@@ -45,6 +51,8 @@ public class MapperDTO {
 	
 	public ComputerBean mapComputerToDTO(Computer c) {
 		
+		//Validation
+		
 		Optional<LocalDate> introducedBuffer = Optional.empty();
 		Optional<LocalDate> discontinuedBuffer = Optional.empty();
 		
@@ -67,6 +75,27 @@ public class MapperDTO {
 		return(cBean);
 	}
 	
+	public Company mapDTOToCompany(CompanyBean cBean) {
+		
+		//Validation
+		
+		Company company = new Company(cBean.getId(),cBean.getName());
+		
+		return(company);
+		
+	}
+	
+	public CompanyBean mapCompanyToDTO(Company company) {
+		
+		CompanyBean cBean = new CompanyBean();
+		
+		cBean.setId(company.getId());
+		cBean.setName(company.getName());
+		
+		return(cBean);
+		
+	}
+
 	public RequestParameter mapParameters(RequestParameterBean pBean) {
 		
 		RequestParameter parameters = new RequestParameter();

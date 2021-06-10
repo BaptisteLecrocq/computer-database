@@ -70,24 +70,27 @@ public class DAO{
 	private static final String[] columnCompany = { "company.id ", "company.name " };
 	
 	
-	@Autowired
 	private ComputerRowMapper computerMapper;
-	@Autowired
 	private CompanyRowMapper companyMapper;
-	@Autowired
 	private Database db;
-	@Autowired
 	private Mapper map;
-	@Autowired
 	private MapperDTOdb mapDb;
 	
 	private static Logger logger = LoggerFactory.getLogger(DAO.class);
 	
-	
+	public DAO(ComputerRowMapper computerMapper, CompanyRowMapper companyMapper, Database db, Mapper map, MapperDTOdb mapDb) {
+		
+		this.computerMapper = computerMapper;
+		this.companyMapper = companyMapper;
+		this.db = db;
+		this.map = map;
+		this.mapDb = mapDb;
+		
+	}
 	
 	/*            Simple Requests             */
 
-	public int getLastComputerId() {
+ 	public int getLastComputerId() {
 		
 		JdbcTemplate temp = new JdbcTemplate(db.getDataSource());		
 		int id = temp.queryForObject(getLastComputerId, Integer.class);

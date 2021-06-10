@@ -58,7 +58,7 @@
                             <input type="checkbox" id="selectall" /> 
                             <span style="vertical-align: top;">
                             	<c:url value ="/app" var = "lienDashboard" >
-                            		<c:param name="pageNumber" value="${ pageNumber }" />
+                            		<c:param name="pageNumber" value="${ params.pageNumber }" />
                             		<c:param name="choice" value="${ choice }" />
 		                       		<c:param name="order" value="${ order }" />	
                             	</c:url>
