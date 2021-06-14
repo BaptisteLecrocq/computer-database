@@ -41,14 +41,14 @@ public class MapperDTOdb {
 		Optional<LocalDate> discontinued = Optional.ofNullable(computer.getEnd());
 		
 		if(introduced.isPresent()) {
-			cBean.setIntroduced(introduced.toString());
+			cBean.setIntroduced(introduced.get().toString());
 		
 		} else {
 			cBean.setIntroduced(null);
 		}
 		
 		if(discontinued.isPresent()) {
-			cBean.setDiscontinued(discontinued.toString());
+			cBean.setDiscontinued(discontinued.get().toString());
 		
 		} else {
 			cBean.setDiscontinued(null);

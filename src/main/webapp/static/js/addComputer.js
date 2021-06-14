@@ -1,5 +1,6 @@
 /*
 
+
 $(document).submit(function(event) {
 	var introduced = $("#introduced").val();
 	var discontinued = $("#discontinued").val();
@@ -108,6 +109,7 @@ function checkDiscontinuedIfNotIntroduced() {
 }
 
 */
+
 console.log("t")
 let inputIntroduced = $("#introduced")
 let inputDiscontinued = $("#discontinued")

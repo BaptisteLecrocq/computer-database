@@ -1,4 +1,4 @@
-package com.excilys.cdb;
+package com.excilys.cdb.config;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;

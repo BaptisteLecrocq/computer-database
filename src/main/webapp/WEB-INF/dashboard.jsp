@@ -2,6 +2,7 @@
     pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,13 +11,25 @@
 	<link href="../../cdb/static/css/bootstrap.min.css" rel="stylesheet" media="screen">
 	<link href="../../cdb/static/css/font-awesome.css" rel="stylesheet" media="screen">
 	<link href="../../cdb/static/css/main.css" rel="stylesheet" media="screen">
-	<title>Dashboard</title>
+	<title>
+		<fmt:message key="label.dashboard" />
+	</title>
 </head>
 <body>
 
 <header class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <a class="navbar-brand" href="#"> Application - Computer Database </a>
+            <ul>
+            	<c:url value="/app" var="lienFR" >
+            		<c:param name="lang" value="fr" />
+            	</c:url>
+            	<c:url value="/app" var="lienEN" >
+            		<c:param name="lang" value="en" />
+            	</c:url>
+            	<li><a href="${ lienFR }">FR</a></li>
+		        <li><a href="${ lienEN }">EN</a></li>            
+            </ul>
         </div>
     </header>
 
@@ -24,21 +37,25 @@
         <div class="container">
         
             <h1 id="homeTitle">
-                <c:out value="${ count }" /> Computers found
+                <c:out value="${ count }" /> <fmt:message key="label.found" />
             </h1>       
                  
             <div id="actions" class="form-horizontal">
                 <div class="pull-left">
                     <form id="searchForm" action="#" method="GET" class="form-inline">
-                        <input type="search" id="searchbox" name="search" class="form-control" placeholder="Search name" />
-                        <input type="submit" id="searchsubmit" value="Filter by name" class="btn btn-primary" />
-                        <input type="submit" id="refresh" name="refresh" value="Refresh" class="btn btn-info" />
+                        <input type="search" id="searchbox" name="search" class="form-control" placeholder='<fmt:message key="button.searchName" />' />
+                        <input type="submit" id="searchsubmit" value='<fmt:message key="button.filter" />' class="btn btn-primary" />
+                        <input type="submit" id="refresh" name="refresh" value='<fmt:message key="button.refresh" />' class="btn btn-info" />
                     </form>
                 </div>
                 <div class="pull-right">
                 	<c:url value="/add" var="lienAdd" />
-                    <a class="btn btn-success" id="addComputer" href="${ lienAdd }">Add Computer</a> 
-                    <a class="btn btn-default" id="editComputer" href="#" onclick="$.fn.toggleEditMode();">Edit</a>
+                    <a class="btn btn-success" id="addComputer" href="${ lienAdd }">
+                    	<fmt:message key="button.addComputer" />
+                    </a> 
+                    <a class="btn btn-default" id="editComputer" href="#" onclick="$.fn.toggleEditMode();">
+                    	<fmt:message key="button.edit" />
+                    </a>
                 </div>
             </div>
         </div>
@@ -77,7 +94,7 @@
 		                       	</c:url>
 		                       	
                         		<a href="${ lienChoix }" >
-	                        		<c:out value="${ columnName[column] }"></c:out>
+                        			<fmt:message key="${ columnName[column] }" />
 	                        		<c:choose>
 		                                 <c:when test = "${order == 0 && choice == column}">
 		                                    &#x25BC
@@ -86,7 +103,7 @@
 		                                    &#x25B2
 		                                </c:when>
 		                            </c:choose>	                            
-	                            </a>	                       	
+	                            </a>                       	
 	                        	
 	                        </th>
                         </c:forEach>

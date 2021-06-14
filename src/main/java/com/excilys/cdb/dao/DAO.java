@@ -223,12 +223,18 @@ public class DAO{
 		MapSqlParameterSource params = new MapSqlParameterSource();
 
 		
-		for(int i=0; i<buffer.length; i++) {
+		for(int i=0; i < (buffer.length - 1); i++) {
 			
 			query+=":id"+i+", ";
 			params.addValue("id"+i, Integer.parseInt(buffer[i]));
 			
 		}
+		
+		int last = (buffer.length - 1);
+		
+		query +=" :id"+last+" )";
+		params.addValue("id"+last, Integer.parseInt(buffer[last]));
+		
 		
 		temp.update(query, params);
 		

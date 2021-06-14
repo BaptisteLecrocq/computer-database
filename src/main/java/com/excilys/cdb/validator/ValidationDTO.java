@@ -16,13 +16,13 @@ public class ValidationDTO {
 	
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	
-	private static final String ERR_NAME = "Name can't be null";
-	private static final String ERR_DATE_ORDER = "Discontinuation date has to be later than Introduction date";
-	private static final String ERR_DATE_ABSENT = "Can't have a discontinuation date without an introduction one";
-	private static final String ERR_FORMAT_INTRODUCED = "Wrong Introduction date format";
-	private static final String ERR_FORMAT_DISCONTINUED = "Wrong Discontinuation date format";
-	private static final String ERR_FORMAT_COMPANY_ID = "Wrong Company Id format";
-	private static final String ERR_COMPANY = "Company does not exist";
+	private static final String ERR_NAME = "error.name";
+	private static final String ERR_DATE_ORDER = "error.dateOrder";
+	private static final String ERR_DATE_ABSENT = "error.absentIntroduction";
+	private static final String ERR_FORMAT_INTRODUCED = "error.formatIntroduced";
+	private static final String ERR_FORMAT_DISCONTINUED = "error.formatDiscontinued";
+	private static final String ERR_FORMAT_COMPANY_ID = "error.formatCompany";
+	private static final String ERR_COMPANY = "error.noCompany";
 	
 	
 	@Autowired
@@ -70,7 +70,7 @@ public class ValidationDTO {
 	}
 	
 	private boolean validateDiscontinuedButNoIntroduced(String start, String end) {
-		return(start == null && end != null);
+		return( (start == null || start.length() == 0) && (end != null || end.length() > 0) );
 	}
 	
 	private boolean validateIntroducedBeforeDiscontinued(String start, String end) {

@@ -40,7 +40,7 @@ public class Dashboard {
 	private final int pageSize = 12;
 	
 	private static final long serialVersionUID = 1L;
-	private static final String[] columnName = { "Computer name", "Introduced date", "Discontinued date", "Company"};
+	private static final String[] columnName = { "column.name", "column.introduced", "column.discontinued", "column.company"};
 	
 
 	private CRUD service;
@@ -72,8 +72,7 @@ public class Dashboard {
 		
 		
 		
-		//pageNumber
-		
+		//pageNumber		
 		if( pageNumber == null ) {
 			pageNumber = params.getPageNumber();
 		

@@ -98,7 +98,7 @@ public class EditComputer {
 			if(errors.isEmpty()) {
 				
 				Computer computer = map.mapDTOToComputer(cbean);
-				service.addComputer(computer);
+				service.updateComputer(computer);
 				
 			}
 			editView.addObject("errors", errors);

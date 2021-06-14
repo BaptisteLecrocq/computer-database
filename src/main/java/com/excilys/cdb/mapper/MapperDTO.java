@@ -27,6 +27,7 @@ public class MapperDTO {
 		
 		String start = cBean.getIntroduced();
 		String end = cBean.getDiscontinued();
+		Computer computer;
 		
 		LocalDate introduced = null;
 		LocalDate discontinued = null;
@@ -37,14 +38,26 @@ public class MapperDTO {
 		if (!(end.equals("n") || end.equals("") || end == null)) {
 			discontinued = LocalDate.parse(end, formatter);
 		}
+		if(cBean.getId() == null) {
+			
+			computer = new Computer
+					.ComputerBuilder(cBean.getName())
+					.withStart(introduced)
+					.withEnd(discontinued)
+					.withManufacturer(Integer.parseInt(cBean.getCompany()),null)
+					.build();
 		
-		Computer computer = new Computer
-				.ComputerBuilder(cBean.getName())
-				.withId(Integer.parseInt(cBean.getId()))
-				.withStart(introduced)
-				.withEnd(discontinued)
-				.withManufacturer(Integer.parseInt(cBean.getCompany()),null)
-				.build();
+			
+		} else {
+		
+			computer = new Computer
+					.ComputerBuilder(cBean.getName())
+					.withId(Integer.parseInt(cBean.getId()))
+					.withStart(introduced)
+					.withEnd(discontinued)
+					.withManufacturer(Integer.parseInt(cBean.getCompany()),null)
+					.build();
+		}
 		
 		return(computer);
 	}
