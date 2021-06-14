@@ -21,6 +21,7 @@ import com.excilys.main;
 import com.excilys.cdb.beans.RequestParameterBean;
 import com.excilys.cdb.dao.DAO;
 import com.excilys.cdb.dao.Database;
+import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.model.Computer;
 import com.excilys.cdb.model.RequestParameter;
 
@@ -50,14 +51,16 @@ public class DAOTest {
     @Test
     public void findComputerNotinH2ButInDB() {
     	String computerDbName = "testupdatearch";
-    	Optional<Computer> results = daotest.findComputer(592);
+    	Computer results;
     	
-    	if(results.isPresent()) {
-    		assertFalse(computerDbName.equals(results.get().getName()));
-    	}
-    	else {
-    		fail();
-    	}
+		try {
+			results = daotest.findComputer(592);
+			assertFalse(computerDbName.equals(results.getName()));
+			
+		} catch (NotFoundException e) {
+			fail();
+		}
+
     }
     
     @Test
@@ -72,15 +75,20 @@ public class DAOTest {
     	
     	daotest.addComputer(computer);
     	
-    	int id = daotest.getLastComputerId();    	
-    	Optional<Computer> computerAdded = daotest.findComputer(id);
+    	int id = daotest.getLastComputerId();    
     	
-    	if(computerAdded.isPresent()) {
-    		assertTrue(testName.equals(computerAdded.get().getName()));
-    	}
-    	else {
-    		fail();
-    	}
+    	Computer computerAdded;
+    	
+		try {
+			
+			computerAdded = daotest.findComputer(id);
+			assertTrue(testName.equals(computerAdded.getName()));
+			
+		} catch (NotFoundException e) {
+			
+			fail();
+			
+		}
     	
     }
     
@@ -105,14 +113,19 @@ public class DAOTest {
     	
     	daotest.updateComputer(update);
     	
-    	Optional<Computer> computerUpdated = daotest.findComputer(id);
+    	Computer computerUpdated;
     	
-    	if(computerUpdated.isPresent()) {
-    		assertTrue(testName.equals(computerUpdated.get().getName()));
-    	}
-    	else {
-    		fail();
-    	}    	
+		try {
+			
+			computerUpdated = daotest.findComputer(id);
+			assertTrue(testName.equals(computerUpdated.getName()));
+			
+		} catch (NotFoundException e) {
+			
+			fail();
+			
+		}
+		
     }
     
     @Test
@@ -130,8 +143,17 @@ public class DAOTest {
     	
     	daotest.deleteComputer(id);
     	
-    	Optional<Computer> computerDeleted = daotest.findComputer(id);
-    	assertFalse(computerDeleted.isPresent());
+    	try {
+    		
+			Computer computerDeleted = daotest.findComputer(id);
+			fail();
+			
+		} catch (NotFoundException e) {
+			
+			assertTrue(true);
+			
+		}
+ 
     	
     }
 

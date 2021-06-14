@@ -112,7 +112,6 @@ public class Dashboard {
 		
 		
 		if(refresh != null && refresh.length() > 0) {
-			System.out.println(refresh);
 			
 			pageNumber = 0;
 			search = "";

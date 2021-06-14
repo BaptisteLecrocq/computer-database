@@ -78,7 +78,7 @@ public class CRUD {
 		dao.deleteCompany(id);
 	}
 	
-	public Optional<Computer> getComputerById(int id) {		
+	public Computer getComputerById(int id) throws NotFoundException {		
 		return(dao.findComputer(id));		
 	}
 

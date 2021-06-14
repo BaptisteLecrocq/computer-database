@@ -52,7 +52,7 @@ public class EditComputer {
 	}
 	
 	@GetMapping("/edit")
-	protected ModelAndView doGet( @RequestParam(required=false) int idComputer ) {
+	protected ModelAndView doGet( @RequestParam(required=false) Integer idComputer ) {
 		
 		ModelAndView editView = new ModelAndView("editComputer");
 		editView.addObject("idComputer", idComputer);		

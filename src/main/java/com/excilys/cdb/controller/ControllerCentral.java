@@ -160,13 +160,17 @@ public class ControllerCentral {
 	public String getComputerById(int id) {
 		
 		String message = null;
-		Optional<Computer> computer = service.getComputerById(id);
+		Computer computer;
 		
-		if(computer.isPresent()) {
-			message = computer.get().toString();
-		}
-		else {
+		try {
+			
+			computer = service.getComputerById(id);
+			message = computer.toString();
+			
+		} catch (NotFoundException e) {
+			
 			message = "Computer Not Found";
+			
 		}
 		
 		return(message);
@@ -193,13 +197,16 @@ public class ControllerCentral {
 		ArrayList<String> error = new ArrayList<String>();
 		
 		try {
-			service.deleteCompany(idCompany);
 			
+			service.deleteCompany(idCompany);
+		
 		} catch (TransactionException e) {
-			logger.debug(e.getMessage());
+			
+			logger.info(e.getMessage());
 			error.add(e.getMessage());
-			e.printStackTrace();
+			
 		}
+		
 		
 		return(error);
 	}

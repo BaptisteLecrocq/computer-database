@@ -48,7 +48,9 @@ public class SpringConfig implements WebMvcConfigurer{
      */
 	@Override
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+		
         configurer.enable();
+        
     }
 	
 	
@@ -57,30 +59,39 @@ public class SpringConfig implements WebMvcConfigurer{
      */
 	@Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");	
+		
+        registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
+        
     }
 	
 	@Bean("messageSource")
 	public MessageSource messageSource() {
+		
 	    ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
 	    messageSource.setBasenames("language/content");
 	    messageSource.setDefaultEncoding("UTF-8");
+	    
 	    return messageSource;
+	    
 	}
 	
 	@Bean
 	public LocaleResolver localeResolver() {
+		
 		SessionLocaleResolver slr = new SessionLocaleResolver();
         slr.setDefaultLocale(Locale.ENGLISH);
+        
 	    return(slr);
+	    
 	}
 	
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		System.out.println("Changement de langue");
+		
 	    LocaleChangeInterceptor localeChangeInterceptor = new LocaleChangeInterceptor();
 	    localeChangeInterceptor.setParamName("lang");
 	    registry.addInterceptor(localeChangeInterceptor);
+	    
 	}
 	
 }
