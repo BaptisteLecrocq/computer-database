@@ -27,9 +27,9 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 
 import com.excilys.cdb.controller.ControllerCentral;
-import com.excilys.cdb.dao.DAO;
-import com.excilys.cdb.mapper.Mapper;
-import com.excilys.cdb.service.CRUD;
+import com.excilys.cdb.dao.ComputerDAO;
+import com.excilys.cdb.mapper.MapperDTO;
+import com.excilys.cdb.service.ComputerService;
 import com.excilys.cdb.servlets.Dashboard;
 import com.excilys.cdb.ui.CLI;
 import com.excilys.cdb.validator.ValidationDTO;
@@ -47,9 +47,9 @@ import com.zaxxer.hikari.HikariDataSource;
 									"com.excilys.cdb.ui",
 									"com.excilys.cdb.validator"},
 		basePackageClasses = { ControllerCentral.class,
-								CRUD.class,
-								DAO.class,
-								Mapper.class,
+								ComputerService.class,
+								ComputerDAO.class,
+								MapperDTO.class,
 								Dashboard.class,
 								CLI.class,
 								ValidationDTO.class	} )

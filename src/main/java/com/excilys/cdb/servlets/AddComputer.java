@@ -24,14 +24,13 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.excilys.cdb.beans.CompanyBean;
 import com.excilys.cdb.beans.ComputerBean;
-import com.excilys.cdb.controller.ControllerCentral;
-import com.excilys.cdb.dao.DAO;
 import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.mapper.MapperDTO;
 import com.excilys.cdb.model.Company;
 import com.excilys.cdb.model.Computer;
 import com.excilys.cdb.model.RequestParameter;
-import com.excilys.cdb.service.CRUD;
+import com.excilys.cdb.service.CompanyService;
+import com.excilys.cdb.service.ComputerService;
 import com.excilys.cdb.validator.ValidationDTO;
 
 
@@ -42,13 +41,15 @@ public class AddComputer {
 	private static final long serialVersionUID = 1L;
 	private static Logger logger = LoggerFactory.getLogger(AddComputer.class);
 	
-	private CRUD service;
+	private ComputerService computerService;
+	private CompanyService companyService;
 	private MapperDTO map;
 	private ValidationDTO valDTO;
 	
-	public AddComputer( CRUD service, MapperDTO map, ValidationDTO valDTO) {
+	public AddComputer(ComputerService computerService, CompanyService companyService, MapperDTO map, ValidationDTO valDTO) {
 		
-		this.service = service;
+		this.computerService = computerService;
+		this.companyService = companyService;
 		this.map = map;
 		this.valDTO = valDTO;
 		
@@ -63,7 +64,7 @@ public class AddComputer {
 		ArrayList<CompanyBean> list = new ArrayList<CompanyBean>();
 		
 		try {
-			companylist = service.listCompany(new RequestParameter());
+			companylist = companyService.listCompany(new RequestParameter());
 			list = (ArrayList<CompanyBean>) companylist.stream()
 					.map(c -> map.mapCompanyToDTO(c))
 					.collect(Collectors.toList());
@@ -100,7 +101,7 @@ public class AddComputer {
 			if(errors.isEmpty()) {
 				
 				Computer computer = map.mapDTOToComputer(cbean);
-				service.addComputer(computer);
+				computerService.addComputer(computer);
 				
 			}
 			addView.addObject("errors", errors);

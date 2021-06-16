@@ -1,19 +1,8 @@
 package com.excilys.cdb.servlets;
 
-import java.io.IOException; 
-import java.time.LocalDate;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,14 +12,13 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.excilys.cdb.beans.ComputerBean;
 import com.excilys.cdb.beans.RequestParameterBean;
-import com.excilys.cdb.controller.ControllerCentral;
 import com.excilys.cdb.mapper.MapperDTO;
 import com.excilys.cdb.model.Computer;
 import com.excilys.cdb.model.Page;
-import com.excilys.cdb.model.PageComputer;
 import com.excilys.cdb.model.PageComputerFactory;
 import com.excilys.cdb.model.RequestParameter;
-import com.excilys.cdb.service.CRUD;
+import com.excilys.cdb.service.CompanyService;
+import com.excilys.cdb.service.ComputerService;
 import com.excilys.cdb.validator.ValidationDTO;
 
 //@WebServlet(name = "Dashboard", urlPatterns = "/app")
@@ -43,7 +31,8 @@ public class Dashboard {
 	private static final String[] columnName = { "column.name", "column.introduced", "column.discontinued", "column.company"};
 	
 
-	private CRUD service;
+	private ComputerService computerService;
+	private CompanyService companyService;
 	private MapperDTO map;
 	private ValidationDTO valDTO;
 	private JSPParameter params;
@@ -51,9 +40,10 @@ public class Dashboard {
 	private final PageComputerFactory computerFactory = new PageComputerFactory();
 	private Page page;
 	
-	public Dashboard( CRUD service, MapperDTO map, ValidationDTO valDTO, JSPParameter params) {
+	public Dashboard(ComputerService computerService, CompanyService companyService, MapperDTO map, ValidationDTO valDTO, JSPParameter params) {
 		
-		this.service = service;
+		this.computerService = computerService;
+		this.companyService = companyService;
 		this.map = map;
 		this.valDTO = valDTO;
 		this.params = params;
@@ -132,14 +122,14 @@ public class Dashboard {
 		
 		page = computerFactory.getPage(pageNumber*pageSize, pageSize, pageNumber, parameters);
 		
-		ArrayList<Computer> computerList = service.pageComputer(page);
+		ArrayList<Computer> computerList = computerService.pageComputer(page);
 		page.setElements(computerList);
 		
 		ArrayList<ComputerBean> beanList = (ArrayList<ComputerBean>) computerList.stream()
 											.map(c -> map.mapComputerToDTO(c))
 											.collect(Collectors.toList());
 		
-		Page.count = service.countComputer(parameters);		
+		Page.count = computerService.countComputer(parameters);		
 		int count = page.getCount();	
 		
 		dashboardView.addObject("params", params);
@@ -156,7 +146,7 @@ public class Dashboard {
 		ModelAndView dashboardView = new ModelAndView("dashboard");
 		
 		if( selection != null ) {
-			service.deleteComputerList(selection);
+			computerService.deleteComputerList(selection);
 		}
 		
 		return(dashboardView);

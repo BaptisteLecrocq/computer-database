@@ -1,16 +1,12 @@
 package com.excilys.cdb.controller;
 
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.ArrayList; 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
-import com.excilys.cdb.beans.CompanyBean;
 import com.excilys.cdb.beans.CompanyBeanCLI;
-import com.excilys.cdb.beans.ComputerBean;
 import com.excilys.cdb.beans.ComputerBeanCLI;
 import com.excilys.cdb.beans.RequestParameterBean;
 import com.excilys.cdb.exception.NotFoundException;
@@ -25,14 +21,15 @@ import com.excilys.cdb.model.PageCompany;
 import com.excilys.cdb.model.PageComputerFactory;
 import com.excilys.cdb.model.PageCompanyFactory;
 import com.excilys.cdb.model.RequestParameter;
-import com.excilys.cdb.service.CRUD;
+import com.excilys.cdb.service.CompanyService;
+import com.excilys.cdb.service.ComputerService;
 import com.excilys.cdb.validator.ValidationDTO;
 
 @Controller
 public class ControllerCentral {
 	
-	@Autowired
-	private CRUD service;
+	private ComputerService computerService;
+	private CompanyService companyService;
 	
 	private final PageComputerFactory computerFactory = new PageComputerFactory();
 	private final PageCompanyFactory companyFactory = new PageCompanyFactory();
@@ -47,7 +44,10 @@ public class ControllerCentral {
 	
 	private static Logger logger = LoggerFactory.getLogger(Controller.class);
 	
-	public ControllerCentral (ValidationDTO valDTO, MapperDTO mapDTO, MapperCLI mapCLI) {
+	public ControllerCentral (ComputerService computerService, CompanyService companyService, ValidationDTO valDTO, MapperDTO mapDTO, MapperCLI mapCLI) {
+		
+		this.computerService = computerService;
+		this.companyService = companyService;
 		
 		this.valDTO = valDTO;
 		this.mapDTO = mapDTO;
@@ -72,12 +72,12 @@ public class ControllerCentral {
 		if (type == PageComputer.class) {				
 			page = computerFactory.getPage(numberPage*taille, taille, numberPage, parameters);
 			fillPage();
-			Page.count = service.countComputer(parameters);
+			Page.count = computerService.countComputer(parameters);
 			
 		} else if (type == PageCompany.class) {
 			page = companyFactory.getPage(numberPage*taille, taille, numberPage, parameters);
 			fillPage();
-			Page.count = service.countCompany(parameters);
+			Page.count = companyService.countCompany(parameters);
 		}	
 
 	}
@@ -90,10 +90,10 @@ public class ControllerCentral {
 		} else {
 			
 			if( PageComputer.class.equals(page.getClass()) ) {
-				page.setElements(service.pageComputer(page));
+				page.setElements(computerService.pageComputer(page));
 			
 			} else if ( PageCompany.class.equals(page.getClass()) ){
-				page.setElements(service.pageCompany(page));
+				page.setElements(companyService.pageCompany(page));
 			
 			} else {
 				System.out.println(page.getClass());
@@ -136,7 +136,7 @@ public class ControllerCentral {
 	public ArrayList<Computer> listComputer(RequestParameter parameters){
 		ArrayList<Computer> computerList = new ArrayList<Computer>();
 		try {
-			computerList = service.listComputer(parameters);
+			computerList = computerService.listComputer(parameters);
 		} catch (NotFoundException e) {
 			logger.info(e.toString());
 			e.printStackTrace();
@@ -148,7 +148,7 @@ public class ControllerCentral {
 	public ArrayList<Company> listCompany(RequestParameter parameters){
 		ArrayList<Company> companyList = new ArrayList<Company>();
 		try {
-			companyList = service.listCompany(parameters);
+			companyList = companyService.listCompany(parameters);
 		} catch (NotFoundException e) {
 			logger.toString();
 			e.printStackTrace();
@@ -164,7 +164,7 @@ public class ControllerCentral {
 		
 		try {
 			
-			computer = service.getComputerById(id);
+			computer = computerService.getComputerById(id);
 			message = computer.toString();
 			
 		} catch (NotFoundException e) {
@@ -177,19 +177,19 @@ public class ControllerCentral {
 	}
 	
 	public boolean addComputer() {
-		return (service.addComputer(computer));
+		return (computerService.addComputer(computer));
 	}
 
 	public void addCompany() {
-		service.addCompany(company);
+		companyService.addCompany(company);
 	}
 
 	public boolean updateComputer() {
-		return (service.updateComputer(computer));
+		return (computerService.updateComputer(computer));
 	}
 	
 	public boolean deleteComputer(int idComputer) {
-		return (service.deleteComputer(idComputer));
+		return (computerService.deleteComputer(idComputer));
 	}
 	
 	public ArrayList<String> deleteCompany(int idCompany) {
@@ -198,7 +198,7 @@ public class ControllerCentral {
 		
 		try {
 			
-			service.deleteCompany(idCompany);
+			companyService.deleteCompany(idCompany);
 		
 		} catch (TransactionException e) {
 			

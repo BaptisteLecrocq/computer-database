@@ -4,12 +4,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.excilys.cdb.beans.ComputerBean;
 import com.excilys.cdb.model.RequestParameter;
-import com.excilys.cdb.service.CRUD;
+import com.excilys.cdb.service.CompanyService;
 
 @Component
 public class ValidationDTO {
@@ -25,8 +24,13 @@ public class ValidationDTO {
 	private static final String ERR_COMPANY = "error.noCompany";
 	
 	
-	@Autowired
-	private CRUD service;	
+	private CompanyService service;
+	
+	public ValidationDTO(CompanyService service) {
+		
+		this.service = service;
+		
+	}
 	
 	public ArrayList<String> validateComputerBean(ComputerBean cBean) {
 		

@@ -4,11 +4,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Optional;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -18,8 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.excilys.main;
-import com.excilys.cdb.beans.RequestParameterBean;
-import com.excilys.cdb.dao.DAO;
+import com.excilys.cdb.dao.ComputerDAO;
 import com.excilys.cdb.dao.Database;
 import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.model.Computer;
@@ -29,7 +24,7 @@ public class DAOTest {
 	
 	private static Logger logger = LoggerFactory.getLogger(main.class);
 	@Autowired
-	private static DAO daotest;
+	private static ComputerDAO daotest;
 	
 	private Database db = daotest.getDb();
     

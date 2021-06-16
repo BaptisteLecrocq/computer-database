@@ -1,28 +1,21 @@
 package com.excilys.cdb.service;
 
-import com.excilys.cdb.dao.DAO; 
-import com.excilys.cdb.exception.NotFoundException;
-import com.excilys.cdb.exception.TransactionException;
-import com.excilys.cdb.model.Computer;
-import com.excilys.cdb.model.Page;
-import com.excilys.cdb.model.Company;
-import com.excilys.cdb.model.RequestParameter;
-
-
-
 import java.util.ArrayList;
-import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.excilys.cdb.dao.ComputerDAO;
+import com.excilys.cdb.exception.NotFoundException;
+import com.excilys.cdb.model.Computer;
+import com.excilys.cdb.model.Page;
+import com.excilys.cdb.model.RequestParameter;
 
 @Service
-public class CRUD {
+public class ComputerService {
 	
-	private DAO dao;
+private ComputerDAO dao;
 	
-	public CRUD( DAO dao ) {
+	public ComputerService( ComputerDAO dao ) {
 		
 		this.dao = dao;
 		
@@ -32,36 +25,20 @@ public class CRUD {
 		return(dao.countComputer(parameters));
 	}
 	
-	public int countCompany(RequestParameter parameters) {
-		return(dao.countCompany(parameters));
-	}
-	
 	public int getLastComputerId() {
 		return(dao.getLastComputerId());
 	}
 	
-	public int getLastCompanyId() {
-		return(dao.getLastCompanyId());
-	}
-	
 	/*            CRUD Requests            */
-
+	
 	public ArrayList<Computer> listComputer(RequestParameter parameters) throws NotFoundException{
 		return(dao.listComputer(parameters));
 	}
-	
-	public ArrayList<Company> listCompany(RequestParameter parameters) throws NotFoundException{
-		return(dao.listCompany(parameters));
-	}
-	
-	public boolean addComputer(Computer computer) {
-		return(dao.addComputer(computer));	
-	}
-	
-	public void addCompany(Company company) {
-		dao.addCompany(company);
-	}
 
+	public boolean addComputer(Computer computer) {
+		return(dao.addComputer(computer));
+	}
+	
 	public boolean updateComputer(Computer replace) {
 		return(dao.updateComputer(replace));	
 	}
@@ -74,23 +51,18 @@ public class CRUD {
 		dao.deleteComputerList(list);
 	}
 	
-	public void deleteCompany(int id) throws TransactionException {
-		dao.deleteCompany(id);
-	}
-	
 	public Computer getComputerById(int id) throws NotFoundException {		
 		return(dao.findComputer(id));		
 	}
 
 	
 	/*           Page Requests              */
-	
+
 	public ArrayList<Computer> pageComputer(Page page) {
 		return(dao.pageComputer(page));
 	}
 	
-	public ArrayList<Company> pageCompany(Page page) {
-		return(dao.pageCompany(page));
-	}
+	
+	
 	
 }

@@ -2,9 +2,6 @@ package com.excilys.cdb.model;
 
 import java.util.ArrayList;
 
-import com.excilys.cdb.exception.NotFoundException;
-import com.excilys.cdb.service.CRUD;
-
 public class PageComputer extends Page {
 	
 	private ArrayList<Computer> elements;

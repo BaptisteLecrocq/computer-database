@@ -6,10 +6,9 @@ import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.excilys.cdb.service.CRUD;
+import com.excilys.cdb.service.CompanyService;
 
 @Component
 public class ValidationCLI {
@@ -17,8 +16,13 @@ public class ValidationCLI {
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	private static Logger logger = LoggerFactory.getLogger(ValidationCLI.class);
 	
-	@Autowired
-	private CRUD service; 
+	private CompanyService service;
+	
+	public ValidationCLI(CompanyService service) {
+		
+		this.service = service;
+		
+	}
 		
 	private static final String nullName = "Name can't be null";
 	private static final String wrongDateFormat = "Wrong Date Format";
