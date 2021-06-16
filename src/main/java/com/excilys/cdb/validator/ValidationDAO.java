@@ -1,5 +1,6 @@
 package com.excilys.cdb.validator;
 
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;   
@@ -41,7 +42,7 @@ public class ValidationDAO {
 			if(validateIntroducedBeforeDiscontinued(cBean.getIntroduced(),cBean.getDiscontinued())) { throw new ValidationException(ERR_DATE_ORDER); }
 		}
 
-		if(validateCompanyExists(cBean.getCompanyId())) { throw new ValidationException(ERR_COMPANY); }
+		if(validateCompanyExists(cBean.getCompany().getId())) { throw new ValidationException(ERR_COMPANY); }
 		
 	}
 	
@@ -73,13 +74,13 @@ public class ValidationDAO {
 		return(name == null || name.length() == 0 );
 	}
 	
-	private boolean validateDateFormat(String date) {
-		if ( date == null || date.length() == 0 ) {
+	private boolean validateDateFormat(Date date) {
+		if ( date == null ) {
 			return false;	
 		}
 		else {
 			try {
-				LocalDate.parse(date, formatter);
+				LocalDate.parse(date.toString(), formatter);
 				return false;
 			}
 			catch(Exception e) {
@@ -88,34 +89,34 @@ public class ValidationDAO {
 		}		
 	}
 	
-	private boolean validateDiscontinuedButNoIntroduced(String start, String end) {
+	private boolean validateDiscontinuedButNoIntroduced(Date start, Date end) {
 		return(start == null && end != null );
 	}
 	
-	private boolean validateIntroducedBeforeDiscontinued(String start, String end) {
+	private boolean validateIntroducedBeforeDiscontinued(Date start, Date end) {
 			
-			Optional<String> startBuffer = Optional.ofNullable(start);
-			Optional<String> endBuffer = Optional.ofNullable(end);
+			//Date start = Optional.ofNullable(start);
+			//Date end = Optional.ofNullable(end);
 		
 			LocalDate introduced;
 			LocalDate discontinued;
 			
-			if(startBuffer.isPresent()) {
-				introduced = LocalDate.parse(start, formatter);
+			if(start != null) {
+				introduced = LocalDate.parse(start.toString().substring(0, 10), formatter);
 			
 			} else {
 				introduced = null;
 			}
 			
-			if(endBuffer.isPresent()) {
-				discontinued = LocalDate.parse(end, formatter);
+			if(end != null) {
+				discontinued = LocalDate.parse(end.toString().substring(0, 10), formatter);
 			
 			} else {
 				discontinued = null;
 			}
 			
 			
-			if(introduced == null || start.length() == 0 || discontinued == null || end.length() == 0 ) {
+			if(introduced == null || start == null || discontinued == null || end == null ) {
 				return false;
 				
 			} else {

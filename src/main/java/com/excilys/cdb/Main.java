@@ -23,7 +23,7 @@ public class Main {
 		
 		ApplicationContext context = new AnnotationConfigApplicationContext(CLIConfig.class);
 		test = context.getBean(CLI.class);
-		test.init();		
+		test.init();
 
 	}
 

@@ -1,12 +1,19 @@
 package com.excilys.cdb.config;
 
 import java.util.Locale;
+import java.util.Properties;
+
+import javax.sql.DataSource;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.orm.hibernate5.HibernateTransactionManager;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
@@ -14,22 +21,38 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 
+import com.excilys.cdb.controller.ControllerCentral;
+import com.excilys.cdb.dao.DAO;
+import com.excilys.cdb.mapper.Mapper;
+import com.excilys.cdb.service.CRUD;
+import com.excilys.cdb.servlets.Dashboard;
+import com.excilys.cdb.ui.CLI;
+import com.excilys.cdb.validator.ValidationDTO;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
+@EnableTransactionManagement
 @EnableWebMvc
 @Configuration
 @ComponentScan( basePackages = { "com.excilys.cdb.controller", 
 									"com.excilys.cdb.service", 
 									"com.excilys.cdb.dao", 
 									"com.excilys.cdb.mapper",
-									"com.excilys.cdb.dao.JDBCMapper",
 									"com.excilys.cdb.servlets",
 									"com.excilys.cdb.ui",
-									"com.excilys.cdb.validator"} )
+									"com.excilys.cdb.validator"},
+		basePackageClasses = { ControllerCentral.class,
+								CRUD.class,
+								DAO.class,
+								Mapper.class,
+								Dashboard.class,
+								CLI.class,
+								ValidationDTO.class	} )
 public class SpringConfig implements WebMvcConfigurer{
 
 	@Bean
@@ -42,6 +65,12 @@ public class SpringConfig implements WebMvcConfigurer{
  
         return viewResolver;
     }
+	
+	@Bean
+	public DataSource dataSource() {
+		HikariConfig config = new HikariConfig("/hikari.properties");
+		return new HikariDataSource(config);
+	}
 	
 	 /**
      * enable to load resources js css etc
@@ -64,7 +93,7 @@ public class SpringConfig implements WebMvcConfigurer{
         
     }
 	
-	@Bean("messageSource")
+	@Bean
 	public MessageSource messageSource() {
 		
 	    ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
@@ -92,6 +121,31 @@ public class SpringConfig implements WebMvcConfigurer{
 	    localeChangeInterceptor.setParamName("lang");
 	    registry.addInterceptor(localeChangeInterceptor);
 	    
+	}
+	
+	@Bean
+	public LocalSessionFactoryBean sessionFactory() {
+		LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
+
+		sessionFactory.setDataSource(dataSource());
+
+		sessionFactory.setPackagesToScan("com.excilys.cdb.beans");
+		sessionFactory.setHibernateProperties(hibernateProperties());
+
+		return sessionFactory;
+	}
+
+	@Bean
+	public PlatformTransactionManager hibernateTransactionManager() {
+		HibernateTransactionManager transactionManager = new HibernateTransactionManager();
+		transactionManager.setSessionFactory(sessionFactory().getObject());
+		return transactionManager;
+	}
+
+	private final Properties hibernateProperties() {
+		Properties hibernateProperties = new Properties();
+		hibernateProperties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
+		return hibernateProperties;
 	}
 	
 }

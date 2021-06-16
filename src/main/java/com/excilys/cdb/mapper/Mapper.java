@@ -1,5 +1,6 @@
 package com.excilys.cdb.mapper;
 
+import java.sql.Date;
 import java.sql.ResultSet;   
 
 import java.sql.SQLException;
@@ -33,6 +34,7 @@ public class Mapper {
 	
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	private static Logger logger = LoggerFactory.getLogger(Mapper.class);
+	/*
 
  	public int countComputer( Optional<ResultSet> results ) {
 		
@@ -42,11 +44,11 @@ public class Mapper {
 			//val.validateFound(results);
 			results.get().next();
 			i = results.get().getInt(1);
-		/*
+		
 		} catch (NotFoundException e){
 			logger.info(e.getMessage());
 			e.printStackTrace();
-			*/
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -73,62 +75,10 @@ public class Mapper {
 		
 		return(i);
 	}
-	
-	public Computer mapDAOBeanToComputer(ComputerBeanDb cBean) {
-		
-		//Validation from Database?
-		
-		String start = cBean.getIntroduced();
-		String end = cBean.getDiscontinued();
-		
-		LocalDate introduced = null;
-		LocalDate discontinued = null;
-		
-		if( !("".equals(start) || start == null) ){
-			
-			try {
-				start = start.substring(0, 10);
-				introduced = LocalDate.parse(start, formatter);
-				
-			} catch (Exception e) {
-				logger.error(e.toString());
-				e.printStackTrace();
-			} 
-		}
-		
-		if( !("".equals(end) || end == null) ){
-			
-			try {
-				end = end.substring(0, 10);
-				discontinued = LocalDate.parse(end, formatter);
-				
-			} catch (Exception e) {
-				logger.error(e.toString());
-				e.printStackTrace();
-			} 
-		}
-		
-		Computer buffer = new Computer
-				.ComputerBuilder(cBean.getName())
-				.withId(cBean.getId())
-				.withStart(introduced)
-				.withEnd(discontinued)
-				.withManufacturer(cBean.getCompanyId(),cBean.getCompanyName())
-				.build();
-		
-		return buffer;
-		
-	};
-
-	public Company mapDAOBeanToCompany(CompanyBeanDb cBean) {
-		
-		Company company = new Company(cBean.getId(),cBean.getName());
-		
-		return(company);
-		
-	}
+	*/
 	
 	
+	/*
 	public Optional<Computer> getOneComputer( Optional<ResultSet> results ) throws NotFoundException {
 		
 		ArrayList<Computer> test =  mapComputer(results);
@@ -206,4 +156,5 @@ public class Mapper {
 		return(list);
 		
 	}
+	*/
 }

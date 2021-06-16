@@ -51,7 +51,7 @@ public class EditComputer {
 		
 	}
 	
-	@GetMapping("/edit")
+	@GetMapping("/edit/{}")
 	protected ModelAndView doGet( @RequestParam(required=false) Integer idComputer ) {
 		
 		ModelAndView editView = new ModelAndView("editComputer");

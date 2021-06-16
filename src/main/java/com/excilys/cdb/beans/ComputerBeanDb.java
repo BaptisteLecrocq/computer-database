@@ -1,22 +1,33 @@
 package com.excilys.cdb.beans;
 
+import java.sql.Date;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+
+
+
+@Entity
+@Table(name = "computer")
 public class ComputerBeanDb {
 	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	private String name;
-	private String introduced;
-	private String discontinued;
-	private int companyId;
-	private String companyName;
+	private Date introduced;
+	private Date discontinued;
 	
+	@ManyToOne
+	private CompanyBeanDb company;
 	
-	public String getCompanyName() {
-		return companyName;
-	}
-	public void setCompanyName(String companyName) {
-		this.companyName = companyName;
-	}
 	public int getId() {
 		return id;
 	}
@@ -29,22 +40,27 @@ public class ComputerBeanDb {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public String getIntroduced() {
+	public Date getIntroduced() {
 		return introduced;
 	}
-	public void setIntroduced(String introduced) {
+	public void setIntroduced(Date introduced) {
 		this.introduced = introduced;
 	}
-	public String getDiscontinued() {
+	public Date getDiscontinued() {
 		return discontinued;
 	}
-	public void setDiscontinued(String discontinued) {
+	public void setDiscontinued(Date discontinued) {
 		this.discontinued = discontinued;
 	}
-	public int getCompanyId() {
-		return companyId;
+	public CompanyBeanDb getCompany() {
+		return company;
 	}
-	public void setCompanyId(int companyId) {
-		this.companyId = companyId;
+	public void setCompany(CompanyBeanDb company) {
+		this.company = company;
+	}
+	
+	@Override
+	public String toString() {
+		return("Id : "+id+", Name : "+name+", Introduced : "+introduced+", Discontinued : "+discontinued+", Company : "+company);
 	}
 }

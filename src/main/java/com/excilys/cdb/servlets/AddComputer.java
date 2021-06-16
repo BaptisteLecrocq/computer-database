@@ -18,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -33,8 +34,9 @@ import com.excilys.cdb.model.RequestParameter;
 import com.excilys.cdb.service.CRUD;
 import com.excilys.cdb.validator.ValidationDTO;
 
-//@WebServlet(name = "AddComputer", urlPatterns = "/add")
+
 @Controller
+@RequestMapping("/add")
 public class AddComputer {
 	
 	private static final long serialVersionUID = 1L;
@@ -52,7 +54,7 @@ public class AddComputer {
 		
 	}
 	
-	@GetMapping("/add")
+	@GetMapping
 	protected ModelAndView doGet() {
 		
 		ModelAndView addView = new ModelAndView("addComputer");
@@ -80,7 +82,7 @@ public class AddComputer {
 		
 	}
 	
-	@PostMapping("/add")
+	@PostMapping
 	protected ModelAndView doPost( @RequestParam(required = false) boolean validationFront,
 									@ModelAttribute("computerDTO") ComputerBean cbean ) {
 		

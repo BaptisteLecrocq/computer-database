@@ -1,10 +1,19 @@
 package com.excilys.cdb.beans;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
+@Entity
+@Table(name = "company")
 public class CompanyBeanDb {
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
-	private String name;	
+	private String name;
 	
 	public int getId() {
 		return id;
@@ -17,6 +26,11 @@ public class CompanyBeanDb {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	@Override
+	public String toString() {
+		return("Id : "+id+", Name : "+name+")");
 	}
 	
 }

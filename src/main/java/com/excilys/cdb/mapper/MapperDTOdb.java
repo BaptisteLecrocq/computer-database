@@ -1,6 +1,8 @@
 package com.excilys.cdb.mapper;
 
+import java.sql.Date;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -23,10 +25,80 @@ public class MapperDTOdb {
 	private ValidationDAO valDao;
 	
 	private static Logger logger = LoggerFactory.getLogger(MapperDTOdb.class);
+	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	
 	public MapperDTOdb ( ValidationDAO valDAO) {
 		
 		this.valDao = valDAO;
+		
+	}
+	
+	public Computer mapDAOBeanToComputer(ComputerBeanDb cBean) {
+		
+		//Validation from Database?
+		
+		Date start = cBean.getIntroduced();
+		Date end = cBean.getDiscontinued();
+		
+		LocalDate introduced = null;
+		LocalDate discontinued = null;
+		
+		if( start != null ){
+			
+			try {
+				introduced = LocalDate.parse(start.toString().substring(0, 10), formatter);
+				
+			} catch (Exception e) {
+				logger.error(e.toString());
+				e.printStackTrace();
+			} 
+		}
+		
+		if( end != null ){
+			
+			try {
+				discontinued = LocalDate.parse(end.toString().substring(0, 10), formatter);
+				
+			} catch (Exception e) {
+				logger.error(e.toString());
+				e.printStackTrace();
+			} 
+		}
+		
+		Computer buffer;
+		
+		if( cBean.getCompany() == null) {
+			
+			buffer = new Computer
+					.ComputerBuilder(cBean.getName())
+					.withId(cBean.getId())
+					.withStart(introduced)
+					.withEnd(discontinued)
+					.build();
+			
+		} else {
+			
+			buffer = new Computer
+					.ComputerBuilder(cBean.getName())
+					.withId(cBean.getId())
+					.withStart(introduced)
+					.withEnd(discontinued)
+					.withManufacturer(cBean.getCompany().getId(),cBean.getCompany().getName())
+					.build();
+			
+		}
+		
+		
+		
+		return buffer;
+		
+	};
+
+	public Company mapDAOBeanToCompany(CompanyBeanDb cBean) {
+		
+		Company company = new Company(cBean.getId(),cBean.getName());
+		
+		return(company);
 		
 	}
 	
@@ -41,20 +113,25 @@ public class MapperDTOdb {
 		Optional<LocalDate> discontinued = Optional.ofNullable(computer.getEnd());
 		
 		if(introduced.isPresent()) {
-			cBean.setIntroduced(introduced.get().toString());
+			cBean.setIntroduced(Date.valueOf(introduced.get()));
 		
 		} else {
 			cBean.setIntroduced(null);
 		}
 		
 		if(discontinued.isPresent()) {
-			cBean.setDiscontinued(discontinued.get().toString());
+			cBean.setDiscontinued(Date.valueOf(discontinued.get()));
 		
 		} else {
 			cBean.setDiscontinued(null);
 		}
 		
-		cBean.setCompanyId(computer.getManufacturer().getId());
+		CompanyBeanDb companyBean = new CompanyBeanDb();
+		
+		companyBean.setId(computer.getManufacturer().getId());
+		companyBean.setName(computer.getManufacturer().getName());
+		
+		cBean.setCompany(companyBean);
 		
 		try {
 			valDao.validateComputerBeanDb(cBean);
@@ -66,7 +143,7 @@ public class MapperDTOdb {
 		return(cBean);
 	}
 	
-	public CompanyBeanDb mapCompanyModelToDTOdb( Company company) {
+	public CompanyBeanDb mapCompanyModelToDTOdb( Company company ) {
 		
 		//valDao.validateCompany( company );
 		CompanyBeanDb cBean = new CompanyBeanDb();

@@ -1,26 +1,19 @@
 package com.excilys.cdb.dao;
 
-import java.sql.Connection;  
-import java.sql.Date;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.persistence.Query;
+
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -31,8 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.excilys.cdb.beans.CompanyBeanDb;
 import com.excilys.cdb.beans.ComputerBeanDb;
 import com.excilys.cdb.beans.RequestParameterBeanDb;
-import com.excilys.cdb.dao.JDBCMapper.CompanyRowMapper;
-import com.excilys.cdb.dao.JDBCMapper.ComputerRowMapper;
 import com.excilys.cdb.exception.NotFoundException;
 import com.excilys.cdb.exception.TransactionException;
 import com.excilys.cdb.mapper.Mapper;
@@ -47,65 +38,80 @@ public class DAO{
 	
 	private static final String getComputer = "SELECT computer.id, computer.name, computer.introduced, computer.discontinued, computer.company_id, company.name ";
 	private static final String getCompany = "SELECT id, name ";
-	private static final String countComputer = "SELECT COUNT(computer.id) ";
-	private static final String countCompany = "SELECT COUNT(company.id) ";
-	private static final String allComputers = "FROM computer LEFT JOIN company ON computer.company_id = company.id ";
-	private static final String allCompanies = "FROM company ";
-	private static final String searchComputer = " WHERE computer.name LIKE :searchTerm ";
-	private static final String searchCompany = " WHERE company.name LIKE :searchTerm ";
-	private static final String pageModel = "LIMIT :size OFFSET :start ;";
+	private static final String countComputer = "SELECT COUNT(id) FROM ComputerBeanDb as cp WHERE cp.name LIKE :searchTerm";
+	private static final String countCompany = "SELECT COUNT(id) FROM CompanyBeanDb as cp WHERE cp.name LIKE :searchTerm";
 	
-	private static final String getLastComputerId = "SELECT max(id) FROM computer;";
-	private static final String getLastCompanyId = "SELECT max(id) FROM company;";
-	private static final String addComputer = "INSERT INTO computer (name, introduced, discontinued, company_id) VALUES(:name,:introduced,:discontinued,:companyId)";
-	private static final String addCompany = "INSERT INTO company (name) VALUES(:id)";
-	private static final String getOneComputer = "SELECT computer.id, computer.name, computer.introduced, computer.discontinued, computer.company_id, company.name FROM computer LEFT JOIN company ON computer.company_id = company.id WHERE computer.id=:id";
-	private static final String updateComputer = "UPDATE computer SET name = :name ,introduced = :introduced, discontinued = :discontinued, company_id = :companyId WHERE id=:id";
-	private static final String deleteComputer = "DELETE FROM computer WHERE id=:id";
-	private static final String deleteCompany = "DELETE FROM company WHERE id=:id";
-	private static final String deleteComputers = "DELETE FROM computer WHERE id IN(";
-	private static final String deleteLinkedComputers ="DELETE FROM computer WHERE company_id=:id";
+	private static final String getLastComputerId = "SELECT max(id) FROM ComputerBeanDb;";
+	private static final String getLastCompanyId = "SELECT max(id) FROM CompanyBeanDb;";
+	private static final String updateComputer = "UPDATE FROM ComputerBeanDb SET name = :name ,introduced = :introduced, discontinued = :discontinued, company_id = :companyId WHERE id=:id";
+	private static final String deleteComputer = "DELETE FROM ComputerBeanDb WHERE id= :id";
+	private static final String deleteCompany = "DELETE FROM CompanyBeanDb WHERE id= :id";
+	private static final String deleteComputers = "DELETE FROM ComputerBeanDb WHERE id IN(";
+	private static final String deleteLinkedComputers ="DELETE FROM ComputerBeanDb WHERE company_id= :id";
 	
 	private static final String orderBy = "ORDER BY ";
 	private static final String[] order = { "ASC ", "DESC "};
-	private static final String[] columnComputer = { "computer.id ", "computer.name ", "computer.introduced ", "computer.discontinued ", "company.name " };
-	private static final String[] columnCompany = { "company.id ", "company.name " };
+	private static final String[] columnComputer = { "cp.id ", "computer.name ", "computer.introduced ", "computer.discontinued ", "company.name " };
+	private static final String[] columnCompany = { "id ", "name " };
 	
+	private static final String computerAsk = "FROM ComputerBeanDb as cp LEFT JOIN FETCH cp.company WHERE cp.name LIKE :searchTerm ";
+	private static final String companyAsk = "FROM CompanyBeanDb as cp WHERE cp.name LIKE :searchTerm ";
+	private static final String getOneComputer = "FROM ComputerBeanDb as cp LEFT JOIN FETCH cp.company WHERE cp.id= :id";
 	
-	private ComputerRowMapper computerMapper;
-	private CompanyRowMapper companyMapper;
 	private Database db;
-	private Mapper map;
 	private MapperDTOdb mapDb;
+	private SessionFactory factory;
 	
 	private static Logger logger = LoggerFactory.getLogger(DAO.class);
 	
-	public DAO(ComputerRowMapper computerMapper, CompanyRowMapper companyMapper, Database db, Mapper map, MapperDTOdb mapDb) {
+	public DAO(Database db, MapperDTOdb mapDb, SessionFactory factory) {
 		
-		this.computerMapper = computerMapper;
-		this.companyMapper = companyMapper;
 		this.db = db;
-		this.map = map;
 		this.mapDb = mapDb;
+		this.factory = factory;
 		
 	}
 	
 	/*            Simple Requests             */
 
  	public int getLastComputerId() {
-		
-		JdbcTemplate temp = new JdbcTemplate(db.getDataSource());		
-		int id = temp.queryForObject(getLastComputerId, Integer.class);
+ 		
+ 		int id = 0;
+ 		
+ 		try( Session session = factory.openSession() ) {
+ 			
+ 			id = session.createQuery(getLastComputerId,Long.class)
+ 							.getSingleResult()
+ 							.intValue();
+ 			
+ 		} catch (HibernateException e) {
+			
+			logger.error(e.getMessage());
+			e.printStackTrace();
+			
+		}
+
 
 		return(id);
 	}
 	
-	
 	public int getLastCompanyId() { 
 		
 		
-		JdbcTemplate temp = new JdbcTemplate(db.getDataSource());		
-		int id = temp.queryForObject(getLastCompanyId, Integer.class);
+		int id = 0;
+ 		
+ 		try( Session session = factory.openSession() ) {
+ 			
+ 			id = session.createQuery(getLastCompanyId,Long.class)
+ 							.getSingleResult()
+ 							.intValue();
+ 			
+ 		} catch (HibernateException e) {
+			
+			logger.error(e.getMessage());
+			e.printStackTrace();
+			
+		}
 
 		return(id);
 	}
@@ -117,20 +123,16 @@ public class DAO{
 		
 		ComputerBeanDb cBean = mapDb.mapComputerModelToDTOdb(computer);
 		
-		try {
+		try( Session session = factory.openSession() ) {
 			
-			SqlParameterSource params = new BeanPropertySqlParameterSource(cBean);
-			NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
+			session.save(cBean);
 			
-			temp.update(addComputer, params);
-		
-		} catch ( DataAccessException e ) {
+		} catch (HibernateException e) {
 			
-			logger.error(e.toString());
+			logger.error(e.getMessage());
 			e.printStackTrace();
 			
 		}
-		
 		
 		return true;
 		
@@ -140,51 +142,40 @@ public class DAO{
 		
 		CompanyBeanDb cBean = mapDb.mapCompanyModelToDTOdb(company);
 		
-		try {
+		try( Session session = factory.openSession() ) {
 			
-			SqlParameterSource params = new BeanPropertySqlParameterSource(cBean);
-			NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
-			
-			temp.update(addCompany, params);
+			session.save(cBean);		
 		
-		} catch ( DataAccessException e ) {
+		} catch (HibernateException e) {
 			
-			logger.error(e.toString());
+			logger.error(e.getMessage());
 			e.printStackTrace();
+			
 		}
-		
 		
 	}
 
 	public Computer findComputer(int id) throws NotFoundException{		
 		
-		Computer computer = null;
-		
-		try {
-		
-			NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
-			
-			MapSqlParameterSource params = new MapSqlParameterSource();
-			params.addValue("id", id);
-					
-			 List<ComputerBeanDb> listBean = temp.query(getOneComputer, params, computerMapper);
-			 
-			 if( listBean.isEmpty() ) {
-				 
-				 throw new NotFoundException("Computer not found");
-				 
-			 } else {
-				 
-				 computer = map.mapDAOBeanToComputer(listBean.get(0));
-				 
-			 }			
-		
-		} catch (DataAccessException e) {
-			
-			logger.error(e.toString());
-			e.printStackTrace();
-			
-		}
+    ComputerBeanDb cBean;
+    
+    	try ( Session session = factory.openSession() ){
+    		
+    		cBean = session.createQuery(getOneComputer, ComputerBeanDb.class)
+    										.setParameter("id", id)
+    										.getSingleResult();  
+    		
+    		System.out.println(cBean);
+    	
+    	} catch( HibernateException e ) {
+    		
+    		logger.error(e.getMessage());
+    		e.printStackTrace();
+    		throw new NotFoundException("Computer not found");
+    		
+    	}
+    	
+    	Computer computer = mapDb.mapDAOBeanToComputer(cBean);
 		
 		return(computer);
 		
@@ -194,68 +185,105 @@ public class DAO{
 
 		ComputerBeanDb cBean = mapDb.mapComputerModelToDTOdb(computer);
 		
-		try {
+		try ( Session session = factory.openSession() ) {
 			
-			NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
-			SqlParameterSource params = new BeanPropertySqlParameterSource(cBean);
+			session.beginTransaction();
+		
+			try {
+				
+				session.createQuery(updateComputer)
+						.setParameter("name",cBean.getName())
+						.setParameter("introduced", cBean.getIntroduced())
+						.setParameter("discontinued", cBean.getDiscontinued())
+						.setParameter("companyId", cBean.getCompany().getId())
+						.setParameter("id", cBean.getId())
+						.executeUpdate();
+				
+				session.getTransaction().commit();
+				
+			} catch( HibernateException e ) {
+	    		
+	    		logger.error(e.getMessage());
+	    		e.printStackTrace();
+	    		session.getTransaction().rollback();
+	    		
+	    	}
 			
-			temp.update(updateComputer, params);
-			
-		} catch (DataAccessException e) {
-			
-			logger.error(e.toString());
-			e.printStackTrace();
-			
+		} catch( HibernateException e ) {
+    		
+    		logger.error(e.getMessage());
+    		e.printStackTrace();
+    		
 		}
-		
-		
 		
 		return true;
 	}
 	
 	public boolean deleteComputer(int id){
 
-		try {
+		try ( Session session = factory.openSession() ) {
 			
-			NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
+			session.beginTransaction();
 			
-			MapSqlParameterSource params = new MapSqlParameterSource();
-			params.addValue("id", id);
+			try  {
+				
+				session.createQuery(deleteComputer)
+						.setParameter("id", id)
+						.executeUpdate();
+				
+				session.getTransaction().commit();
+				
+			} catch( HibernateException e ) {
+	    		
+	    		logger.error(e.getMessage());
+	    		e.printStackTrace();
+	    		session.getTransaction().rollback();
+	    		
+	    	}
 			
-			temp.update(deleteComputer, params);
-			
-		} catch (DataAccessException e) {
-			
-			logger.error(e.toString());
-			e.printStackTrace();
-			
-		}
+		} catch( HibernateException e ) {
+    		
+    		logger.error(e.getMessage());
+    		e.printStackTrace();
+    		
+    	}
 		
 		return true;
 		
 	}
 	
-	@Transactional
 	public void deleteCompany(int id) throws TransactionException {
 		
-		try {
+		try ( Session session = factory.openSession() ) {
+			
+			session.beginTransaction();
 		
-			NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
+			try {
+				
+				session.createQuery(deleteLinkedComputers)
+						.setParameter("id", id)
+						.executeUpdate();
+				
+				session.createQuery(deleteCompany)
+						.setParameter("id", id)
+						.executeUpdate();
+				
+				session.getTransaction().commit();
+				
+			} catch( HibernateException e ) {
+	    		
+	    		logger.error(e.getMessage());
+	    		e.printStackTrace();
+	    		session.getTransaction().rollback();
+	    		
+	    	}
 			
-			MapSqlParameterSource params = new MapSqlParameterSource();
-			params.addValue("id", id);
-			
-			temp.update(deleteLinkedComputers, params);
-			temp.update(deleteCompany, params);
-			
-		} catch (DataAccessException e) {
-			
-			logger.error(e.toString());
-			e.printStackTrace();
-			throw new TransactionException("Company deletion transaction failed");
-			
-		}
-		
+		} catch( HibernateException e ) {
+    		
+    		logger.error(e.getMessage());
+    		e.printStackTrace();
+    		
+    	}
 		
 	}
 	
@@ -264,33 +292,32 @@ public class DAO{
 		String[] buffer = list.split(",");
 		String query = deleteComputers;
 		
-		try {
-		
-			NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
-			MapSqlParameterSource params = new MapSqlParameterSource();
-	
+		for(int i=0; i < (buffer.length - 1); i++) {
 			
-			for(int i=0; i < (buffer.length - 1); i++) {
+			query+=":id"+i+", ";			
+			
+		}
+		query +=" :id"+(buffer.length - 1)+" )";
+		
+		
+		try( Session session = factory.openSession() ) {
+			
+			Query test = session.createQuery(query);
+			
+			for(int i=0; i < buffer.length; i++) {
 				
-				query+=":id"+i+", ";
-				params.addValue("id"+i, Integer.parseInt(buffer[i]));
+				test.setParameter("id"+i, Integer.parseInt(buffer[i]));
 				
 			}
 			
-			int last = (buffer.length - 1);
+			test.executeUpdate();
 			
-			query +=" :id"+last+" )";
-			params.addValue("id"+last, Integer.parseInt(buffer[last]));
-			
-			
-			temp.update(query, params);
-			
-		} catch (DataAccessException e) {
-			
-			logger.error(e.toString());
-			e.printStackTrace();
-			
-		}
+		} catch( HibernateException e ) {
+    		
+    		logger.error(e.getMessage());
+    		e.printStackTrace();
+    		
+    	}
 		
 	}
 	
@@ -299,20 +326,26 @@ public class DAO{
 	
 	public ArrayList<Computer> listComputer(RequestParameter parameters){
 			
-		List<ComputerBeanDb> searchResult = new ArrayList<ComputerBeanDb>();
-		ArrayList<Computer> computerList = new ArrayList<Computer>();
+		List<ComputerBeanDb> listBean = new ArrayList<ComputerBeanDb>();
+		String query = computerAsk+orderBy+columnComputer[parameters.getChoice()]+order[parameters.getOrder()];
+
 		
-		String query = getComputer+allComputers+searchComputer;
+		try( Session session = factory.openSession() ) {
+					
+			listBean = session.createQuery(query, ComputerBeanDb.class)
+													.setParameter("searchTerm", "%"+parameters.getSearchTerm()+"%")
+													.list();
+			
+		} catch( Exception e ) {
+			
+			logger.error(e.getMessage());
+			e.printStackTrace();
+			
+		}
 		
-		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
-		MapSqlParameterSource params = new MapSqlParameterSource();
-		params.addValue("searchTerm", "%"+parameters.getSearchTerm()+"%");
-		
-		searchResult = temp.query(query, params, computerMapper);
-		
-		computerList = (ArrayList<Computer>) searchResult.stream()
-					.map(s -> map.mapDAOBeanToComputer(s))
-					.collect(Collectors.toList());
+		ArrayList<Computer> computerList = (ArrayList<Computer>) listBean.stream()
+				.map(s -> mapDb.mapDAOBeanToComputer(s))
+				.collect(Collectors.toList());					
 		
 		return(computerList);
 		
@@ -321,71 +354,98 @@ public class DAO{
 	public ArrayList<Company> listCompany(RequestParameter parameters){
 			
 		List<CompanyBeanDb> searchResult = new ArrayList<CompanyBeanDb>();
-		ArrayList<Company> computerList = new ArrayList<Company>();
+		String query = companyAsk+orderBy+columnCompany[parameters.getChoice()]+order[parameters.getOrder()];
 		
-		String query = getCompany+allCompanies+searchCompany;
+		try( Session session = factory.openSession() ) {
+			
+			searchResult = session.createQuery(query, CompanyBeanDb.class)
+													.setParameter("searchTerm", "%"+parameters.getSearchTerm()+"%")
+													.list();
+			
+		} catch( Exception e ) {
+			
+			logger.error(e.getMessage());
+			e.printStackTrace();
+			
+		}
 		
-		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
-		MapSqlParameterSource params = new MapSqlParameterSource();
-		params.addValue("searchTerm", "%"+parameters.getSearchTerm()+"%");
+		ArrayList<Company> companyList = (ArrayList<Company>) searchResult.stream()
+					.map(s -> mapDb.mapDAOBeanToCompany(s))
+					.collect(Collectors.toList());					
 		
-		searchResult = temp.query(query, params, companyMapper);
-		
-		computerList = (ArrayList<Company>) searchResult.stream()
-					.map(s -> map.mapDAOBeanToCompany(s))
-					.collect(Collectors.toList());
-		
-		return(computerList);
+		return(companyList);	
 	}		
 	
 	public int countComputer(RequestParameter parameters) {
 			
-		String query = countComputer+allComputers+searchComputer;
+		String query = countComputer;
+		int result = 0;
 		
-		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
-		MapSqlParameterSource params = new MapSqlParameterSource();
-		params.addValue("searchTerm", "%"+parameters.getSearchTerm()+"%");
-		
-		int count = temp.queryForObject(query, params, Integer.class);
+		try( Session session = factory.openSession() ) {
+			
+			result = session.createQuery(query, Long.class)
+							.setParameter("searchTerm", "%"+parameters.getSearchTerm()+"%")
+							.uniqueResult()
+							.intValue();
+			
+		} catch( Exception e ) {
+			
+			logger.error(e.getMessage());
+			e.printStackTrace();
+			
+		}		
 					
-		return(count);
+		return(result);
 	}			
 	
 	public int countCompany(RequestParameter parameters) {
 			
-		String query = countCompany+allCompanies+searchCompany;
+		String query = countCompany;
+		int result = 0;
 		
-		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
-		MapSqlParameterSource params = new MapSqlParameterSource();
-		params.addValue("searchTerm", "%"+parameters.getSearchTerm()+"%");
-		
-		int count = temp.queryForObject(query, params, Integer.class);
+		try( Session session = factory.openSession() ) {
+			
+			result = session.createQuery(query, Long.class)
+							.setParameter("searchTerm", "%"+parameters.getSearchTerm()+"%")
+							.uniqueResult()
+							.intValue();
+			
+		} catch( Exception e ) {
+			
+			logger.error(e.getMessage());
+			e.printStackTrace();
+			
+		}		
 					
-		return(count);
+		return(result);
 	}			
 	
 	public ArrayList<Computer> pageComputer(Page page){
 		
-		
 		RequestParameterBeanDb parameters = mapDb.mapParametersToDTOdb(page.getParameters());
-		List<ComputerBeanDb> searchResult = new ArrayList<ComputerBeanDb>();
-		ArrayList<Computer> computerList = new ArrayList<Computer>();
+		List<ComputerBeanDb> listBean = new ArrayList<ComputerBeanDb>();
+		String query = computerAsk+orderBy+columnComputer[parameters.getChoice()]+order[parameters.getOrder()];
+
 		
-		String query = getComputer+allComputers+searchComputer+orderBy+columnComputer[parameters.getChoice()]+order[parameters.getOrder()]+pageModel;
+		try( Session session = factory.openSession() ) {
+			
+			listBean = session.createQuery(query,ComputerBeanDb.class)
+								.setParameter("searchTerm", "%"+parameters.getSearchTerm()+"%")
+								.setFirstResult(page.getStart())
+								.setMaxResults(page.getTaille())
+								.list();
+			
+			
+		} catch( Exception e ) {
+			
+			logger.error(e.getMessage());
+			e.printStackTrace();
+			
+		}
 		
-		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
-		
-		MapSqlParameterSource params = new MapSqlParameterSource();
-		params.addValue("searchTerm", "%"+parameters.getSearchTerm()+"%");
-		params.addValue("size",page.getTaille());
-		params.addValue("start", page.getStart());
-		
-		searchResult = temp.query(query, params, computerMapper);
-		
-		computerList = (ArrayList<Computer>) searchResult.stream()
-					.map(s -> map.mapDAOBeanToComputer(s))
-					.collect(Collectors.toList());
-					
+		ArrayList<Computer> computerList = (ArrayList<Computer>) listBean.stream()
+				.map(s -> mapDb.mapDAOBeanToComputer(s))
+				.collect(Collectors.toList());		
 		
 		return(computerList);
 
@@ -395,24 +455,28 @@ public class DAO{
 			
 		RequestParameterBeanDb parameters = mapDb.mapParametersToDTOdb(page.getParameters());
 		List<CompanyBeanDb> searchResult = new ArrayList<CompanyBeanDb>();
-		ArrayList<Company> computerList = new ArrayList<Company>();
+		String query = companyAsk+orderBy+columnCompany[parameters.getChoice()]+order[parameters.getOrder()];
 		
-		String query = getCompany+allCompanies+searchCompany+orderBy+columnCompany[parameters.getChoice()]+order[parameters.getOrder()]+pageModel;
+		try( Session session = factory.openSession() ) {
+			
+			searchResult = session.createQuery(query, CompanyBeanDb.class)
+													.setParameter("searchTerm", "%"+parameters.getSearchTerm()+"%")
+													.setFirstResult(page.getStart())
+													.setMaxResults(page.getTaille())
+													.list();
+			
+		} catch( Exception e ) {
+			
+			logger.error(e.getMessage());
+			e.printStackTrace();
+			
+		}
 		
-		NamedParameterJdbcTemplate temp = new NamedParameterJdbcTemplate(db.getDataSource());
-		
-		MapSqlParameterSource params = new MapSqlParameterSource();
-		params.addValue("searchTerm", "%"+parameters.getSearchTerm()+"%");
-		params.addValue("size",page.getTaille());
-		params.addValue("start", page.getStart());
-		
-		searchResult = temp.query(query, params, companyMapper);
-		
-		computerList = (ArrayList<Company>) searchResult.stream()
-					.map(s -> map.mapDAOBeanToCompany(s))
+		ArrayList<Company> companyList = (ArrayList<Company>) searchResult.stream()
+					.map(s -> mapDb.mapDAOBeanToCompany(s))
 					.collect(Collectors.toList());					
 		
-		return(computerList);	
+		return(companyList);	
 	}
 	
 	/*            Utility             */
