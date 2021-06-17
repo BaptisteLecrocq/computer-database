@@ -1,0 +1,12 @@
+com/excilys/cdb/model/Page.class
+com/excilys/cdb/model/PageCompany.class
+com/excilys/cdb/model/PageFactory.class
+com/excilys/cdb/model/PageComputerFactory.class
+com/excilys/cdb/model/Computer.class
+com/excilys/cdb/model/Company.class
+com/excilys/cdb/model/Computer$1.class
+com/excilys/cdb/model/PageComputer.class
+com/excilys/cdb/App.class
+com/excilys/cdb/model/RequestParameter.class
+com/excilys/cdb/model/PageCompanyFactory.class
+com/excilys/cdb/model/Computer$ComputerBuilder.class
