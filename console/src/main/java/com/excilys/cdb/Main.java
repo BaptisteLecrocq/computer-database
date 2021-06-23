@@ -8,7 +8,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import com.excilys.cdb.ui.CLI;
 
 
-public class Main {
+public class Main  {
 
 	private static CLI test;	
 	
@@ -22,7 +22,16 @@ public class Main {
 		ApplicationContext context = new AnnotationConfigApplicationContext(CLIConfig.class);
 		test = context.getBean(CLI.class);
 		test.init();
+		
 
 	}
-
 }
+
+
+
+
+
+
+
+
+

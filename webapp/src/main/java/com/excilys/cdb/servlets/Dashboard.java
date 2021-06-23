@@ -60,7 +60,15 @@ public class Dashboard {
 		
 		ModelAndView dashboardView = new ModelAndView("dashboard");
 		
-		
+		if(refresh != null && refresh.length() > 0) {
+			
+			pageNumber = 0;
+			search = "";
+			order = 0;
+			choice = 0;
+			
+			refresh = null;
+		}
 		
 		//pageNumber		
 		if( pageNumber == null ) {
@@ -98,19 +106,6 @@ public class Dashboard {
 			params.setChoice(choice);
 		}
 		dashboardView.addObject("choice", choice);
-		
-		
-		
-		if(refresh != null && refresh.length() > 0) {
-			
-			pageNumber = 0;
-			search = "";
-			order = 0;
-			choice = 0;
-			
-			refresh = null;
-		}
-
 		
 		
 		RequestParameterBean paramBean = new RequestParameterBean();

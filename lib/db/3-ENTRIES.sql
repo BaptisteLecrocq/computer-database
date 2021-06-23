@@ -41,6 +41,10 @@ insert into company (id,name) values ( 41,'HTC Corporation');
 insert into company (id,name) values ( 42,'Research In Motion');
 insert into company (id,name) values ( 43,'Samsung Electronics');
 
+insert into user_table (id,username,password,role,enabled) values ( 1,'admin','$2a$10$5CuBLqwrF9PGhKK6kT/mFueDtMe2xE0d9qUPYEPf2DF/HosfuiVQO','ROLE_admin',1);
+insert into user_table (id,username,password) values ( 2,'test','$2a$10$Y7DYN/rkFSE7YrvDXGJks.AeH2VJlZDbTUrRUxdbdZVSHQyOQYpqS');
+
+
 insert into computer (id,name,introduced,discontinued,company_id) values (  1,'MacBook Pro 15.4 inch',null,null,1);
 insert into computer (id,name,introduced,discontinued,company_id) values (  2,'CM-2a',null,null,2);
 insert into computer (id,name,introduced,discontinued,company_id) values (  3,'CM-200',null,null,2);

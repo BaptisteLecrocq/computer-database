@@ -12,10 +12,12 @@ import org.springframework.stereotype.Component;
 import com.excilys.cdb.beans.CompanyBeanDb;
 import com.excilys.cdb.beans.ComputerBeanDb;
 import com.excilys.cdb.beans.RequestParameterBeanDb;
+import com.excilys.cdb.beans.UserBean;
 import com.excilys.cdb.exception.ValidationException;
 import com.excilys.cdb.model.Company;
 import com.excilys.cdb.model.Computer;
 import com.excilys.cdb.model.RequestParameter;
+import com.excilys.cdb.model.User;
 import com.excilys.cdb.validator.ValidationDAO;
 
 
@@ -102,6 +104,19 @@ public class MapperDTOdb {
 		
 	}
 	
+	public User mapDAOBeanToUser(UserBean uBean) {
+		
+		User user = new User
+				.UserBuilder(uBean.getUsername())
+				.withId(uBean.getId())
+				.withPassword(uBean.getPassword())
+				.withRole(uBean.getPassword())
+				.withEnabled(uBean.isEnabled())
+				.build();
+		
+		return(user);
+	}
+	
 	public ComputerBeanDb mapComputerModelToDTOdb( Computer computer ) {
 		
 		ComputerBeanDb cBean = new ComputerBeanDb();		
@@ -153,6 +168,25 @@ public class MapperDTOdb {
 		
 		return(cBean);
 		
+	}
+	
+	public UserBean mapUserModelToDTOdb(User user) {
+		
+		UserBean uBean = new UserBean();
+		
+		uBean.setId(user.getId());
+		uBean.setUsername(user.getUsername());
+		uBean.setPassword(user.getPassword());
+		uBean.setRole(user.getRole());
+		
+		if(user.isEnabled()) {
+			uBean.setEnabled(1);
+		
+		} else {
+			uBean.setEnabled(0);			
+		}
+		
+		return(uBean);
 	}
 	
 	public RequestParameterBeanDb mapParametersToDTOdb( RequestParameter parameters) {

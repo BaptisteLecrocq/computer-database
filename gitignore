@@ -38,6 +38,8 @@ local.properties
 
 # sbteclipse plugin
 .target
+target
+target/
 
 # Tern plugin
 .tern-project
@@ -68,6 +70,11 @@ local.properties
 # Spring Boot Tooling
 .sts4-cache/
 
+# Personal ignores
+
+checkstyle.xml
+*.class
+*.log
 .project
 .classpath
 .gitignore

@@ -3,7 +3,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://www.springframework.org/tags/form" prefix="form" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-    
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -18,15 +18,30 @@
     <header class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <a class="navbar-brand" href="dashboard.html"> Application - Computer Database </a>
-             <ul>
-            	<c:url value="/add" var="lienFR" >
-            		<c:param name="lang" value="fr" />
-            	</c:url>
-            	<c:url value="/add" var="lienEN" >
-            		<c:param name="lang" value="en" />
-            	</c:url>
-            	<li><a href="${ lienFR }">FR</a></li>
-		        <li><a href="${ lienEN }">EN</a></li>            
+             <ul class="nav navbar-nav navbar-right">
+            	<li class="dropdown">
+	            	<c:url value="/add" var="lienFR" >
+	            		<c:param name="lang" value="fr" />
+	            	</c:url>
+	            	<c:url value="/add" var="lienEN" >
+	            		<c:param name="lang" value="en" />
+	            	</c:url>
+	            	<c:url value="/logout" var="logoutLink" />
+	            	<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+		        			Change Language
+		        			<span class="caret"></span>
+		        	</a>
+	            	<ul class="dropdown-menu">
+		            	<li><a href="${ lienFR }">FR</a></li>
+				        <li><a href="${ lienEN }">EN</a></li>
+				    </ul>
+			     </li>
+			     <li>
+			     	<a class="pull-right" href="${ logoutLink }">
+			     		<span class="glyphicon glyphicon-log-in" ></span> 
+						<fmt:message key="label.logout" />
+					</a>
+			     </li>            
             </ul>
         </div>
     </header>

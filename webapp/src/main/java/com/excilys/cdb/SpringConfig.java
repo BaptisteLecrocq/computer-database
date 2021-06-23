@@ -34,15 +34,19 @@ import com.excilys.cdb.validator.ValidationDTO;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
+import com.excilys.cdb.config.WebConfig;
+
 @EnableTransactionManagement
 @EnableWebMvc
 @Configuration
-@ComponentScan( basePackages = {				"com.excilys.cdb.service", 
+@ComponentScan( basePackages = {"com.excilys.cdb.config",
+								"com.excilys.cdb.service", 
 								"com.excilys.cdb.dao", 
 								"com.excilys.cdb.mapper",
 								"com.excilys.cdb.servlets",
 								"com.excilys.cdb.validator"},
-		basePackageClasses = {			ComputerService.class,
+		basePackageClasses = {	WebConfig.class,
+								ComputerService.class,
 								ComputerDAO.class,
 								MapperDTO.class,
 								Dashboard.class,
