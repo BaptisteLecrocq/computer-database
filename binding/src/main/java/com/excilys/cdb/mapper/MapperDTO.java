@@ -32,10 +32,10 @@ public class MapperDTO {
 		LocalDate introduced = null;
 		LocalDate discontinued = null;
 		
-		if (!(start.equals("n") || start.equals("") || start == null)) {
+		if (!(start == null || "n".equals(start) || "".equals(start) )) {
 			introduced = LocalDate.parse(start, formatter);
 		}
-		if (!(end.equals("n") || end.equals("") || end == null)) {
+		if (!(end == null || "n".equals(end) || "".equals(end) )) {
 			discontinued = LocalDate.parse(end, formatter);
 		}
 		if(cBean.getId() == null) {
